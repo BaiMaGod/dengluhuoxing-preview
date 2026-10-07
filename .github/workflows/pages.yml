@@ -1,0 +1,88 @@
+name: Deploy Mars Web preview
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate published version
+        run: |
+          set -euo pipefail
+          test -s index.html
+          test -s js/bundle.js
+          python3 - <<'PY'
+          import json
+          v=json.load(open("version.json"))
+          assert v["sourceCommit"] == "c6a7ae6c30cfa9a52adc3f8ae50a2549d27c7562"
+          print("Publishing verified main",v["sourceCommit"])
+          PY
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload Web files
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - name: Deploy Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify live game
+        env:
+          PREVIEW_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          set -euo pipefail
+          npm install --no-save --ignore-scripts playwright-core@1.55.0 > /dev/null
+          export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
+          node --input-type=module <<'JS'
+          import assert from "node:assert/strict";
+          import {chromium} from "playwright-core";
+          const url=process.env.PREVIEW_URL;
+          const version=await fetch(new URL("version.json",url),{cache:"no-store"}).then(r=>r.json());
+          assert.equal(version.sourceCommit,"c6a7ae6c30cfa9a52adc3f8ae50a2549d27c7562");
+          const browser=await chromium.launch({executablePath:process.env.CHROME_BIN,headless:true,args:["--no-sandbox","--disable-dev-shm-usage"]});
+          const page=await browser.newPage({viewport:{width:390,height:844}});
+          const errors=[];
+          page.on("pageerror",e=>errors.push(e.message));
+          page.on("response",r=>{if(r.status()>=400&&!r.url().endsWith("favicon.ico"))errors.push(r.status()+" "+r.url());});
+          try {
+            await page.goto(url,{waitUntil:"domcontentloaded"});
+            await page.waitForFunction(()=>globalThis.Laya?.stage?.numChildren>0);
+            await page.waitForTimeout(1500);
+            const p=await page.evaluate(()=>{
+              function find(n){if(n.text==="开始造火箭"&&n.visible){const p=n.localToGlobal(new Laya.Point(n.width/2,n.height/2));return{x:p.x,y:p.y};}
+                for(let i=0;i<n.numChildren;i++){const p=find(n.getChildAt(i));if(p)return p;}}
+              const p=find(Laya.stage);return p&&{x:p.x/Laya.stage.width*390,y:p.y/Laya.stage.height*844};
+            });
+            assert.ok(p,"Live home screen has the start button");
+            await page.mouse.click(p.x,p.y);
+            await page.waitForFunction(()=>{
+              function find(n){if(n.text?.startsWith("一级发动机"))return true;for(let i=0;i<n.numChildren;i++)if(find(n.getChildAt(i)))return true;return false;}
+              return find(Laya.stage);
+            });
+            await page.screenshot({path:"live-game.png"});
+            assert.deepEqual(errors,[]);
+            console.log("Live preview loaded and entered rocket construction",url,version.sourceCommit);
+          } finally {await browser.close();}
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: live-preview-check
+          path: live-game.png
+          if-no-files-found: ignore
