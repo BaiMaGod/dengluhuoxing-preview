@@ -422,6 +422,8 @@
       this.sparks = [];
       this.textPool = [];
       this.sparkPool = [];
+      this.shockwaves = [];
+      this.wavePool = [];
       this.serial = 0;
     }
     show(x, y, message, color = "#FFE7AE", tier = "small") {
@@ -464,6 +466,19 @@
       }
       this.serial++;
     }
+    ring(x,y,color) {
+      if (this.shockwaves.length >= 4) this.recycleWave(this.shockwaves.shift().node);
+      const node = this.wavePool.pop() || new Laya.Sprite();
+      node.graphics.clear();
+      node.graphics.drawCircle(0,0,42,"#00000000",color,6);
+      node.graphics.drawCircle(0,0,27,"#00000000","#FFFFFF66",2);
+      node.pos(x,y);
+      node.scale(0.32,0.32);
+      node.alpha=0.9;
+      node.mouseEnabled=false;
+      this.root.addChild(node);
+      this.shockwaves.push({node,age:0,lifetime:560});
+    }
     update(dt) {
       for (let i = this.labels.length - 1; i >= 0; i--) {
         const item = this.labels[i];
@@ -476,6 +491,14 @@
           this.recycleText(item.node);
           this.labels.splice(i, 1);
         }
+      }
+      for (let i=this.shockwaves.length-1;i>=0;i--) {
+        const item=this.shockwaves[i]; item.age+=dt;
+        const t=Math.min(1,item.age/item.lifetime);
+        const expansion=0.32+2.25*(1-Math.pow(1-t,2));
+        item.node.scale(expansion,expansion);
+        item.node.alpha=Math.max(0,(1-t)*0.9);
+        if(t>=1) {this.recycleWave(item.node);this.shockwaves.splice(i,1);}
       }
       for (let i = this.sparks.length - 1; i >= 0; i--) {
         const item = this.sparks[i];
@@ -496,6 +519,14 @@
       this.labels.length = 0;
       for (const item of this.sparks) this.recycleSpark(item.node);
       this.sparks.length = 0;
+      for (const item of this.shockwaves) this.recycleWave(item.node);
+      this.shockwaves.length = 0;
+    }
+    recycleWave(node) {
+      node.removeSelf();
+      node.visible = false;
+      if (this.wavePool.length < 4) this.wavePool.push(node);
+      else node.destroy(true);
     }
     recycleText(node) {
       node.removeSelf();
