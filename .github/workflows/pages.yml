@@ -6,7 +6,8 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: pages
+  # Separate live smoke tests from GitHub's own Pages deployment queue.
+  group: mars-live-verification
   cancel-in-progress: true
 jobs:
   deploy:
