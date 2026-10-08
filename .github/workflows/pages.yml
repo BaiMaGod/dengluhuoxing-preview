@@ -6,7 +6,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: mars-preview-qa
+  group: pages
   cancel-in-progress: true
 jobs:
   deploy:
