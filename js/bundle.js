@@ -1537,7 +1537,11 @@
       panel.graphics.clear();
       panel.graphics.drawRect(0, 0, width, height, "#10162F");
       this.addIllustration(panel);
-      this.addText(panel, "抢先登陆火星", 0, 97, width, 75, 56, "#FFF2DF", true);
+      const missionStrip = this.addText(panel, "MARS EXPLORATION  /  001", 0, 56, width, 34, 22, "#B6E5F6", true);
+      missionStrip.alpha = 0.91;
+      const namePlate = this.addText(panel, "抢先登陆火星", 0, 97, width, 75, 56, "#FFF2DF", true);
+      namePlate.stroke = 3;
+      namePlate.strokeColor = "#263653";
       this.addText(panel, "亲手搭火箭 · 穿越星空 · 挑战新高度", 30, 190, width - 60, 45, 26, "#C4E3F6", false);
       const target = (Math.floor(progress.bestAltitudeMeters / 500) + 1) * 500;
       this.addText(panel, `下一目标  ${this.formatAltitude(target)}`, 0, 257, width, 50, 31, "#FFD999", true);
@@ -1550,14 +1554,31 @@
         panel.addChild(module);
         y += h - 1;
       }
+      const astronautMascot = new Laya.Sprite();
+      astronautMascot.name = "home_astronaut_mascot";
+      astronautMascot.mouseEnabled = false;
+      GameplayArt.astronaut(astronautMascot.graphics, 154, 168);
+      astronautMascot.pos(width / 2 - 270, 530);
+      panel.addChild(astronautMascot);
+      const mascotLabel = this.addText(panel, "火星探索员", width / 2 - 277, 704, 170, 30, 20, "#E7F4FF", true);
+      mascotLabel.alpha = 0.92;
       const flame = new Laya.Sprite();
       flame.graphics.drawPoly(0, 0, [-13, 0, 0, 67, 13, 0], "#F69760");
       flame.graphics.drawPoly(0, 0, [-7, 0, 0, 43, 7, 0], "#FFE3A5");
       flame.pos(width / 2, y);
       panel.addChild(flame);
+      const recordPlate = new Laya.Sprite();
+      recordPlate.name = "home_stats_backdrop";
+      recordPlate.mouseEnabled = false;
+      if (!GameplayArt.paint(recordPlate.graphics, "hud_panel", Math.min(width - 100, 615), 136)) {
+        recordPlate.graphics.drawRect(0, 0, Math.min(width - 100, 615), 136, "#12314BBA", "#7EC8DD", 2);
+      }
+      recordPlate.alpha = 0.85;
+      recordPlate.pos((width - Math.min(width - 100, 615)) / 2, 815);
+      panel.addChild(recordPlate);
       this.addText(panel, `历史最高  ${this.formatAltitude(progress.bestAltitudeMeters)}`, 0, 827, width, 48, 33, "#FFE6A9", true);
       this.addText(panel, `火星币 ${progress.marsCoins}  ·  金属 ${progress.metal}  ·  芯片 ${progress.chips}`, 20, 881, width - 40, 42, 26, "#ADE6DF", false);
-      const start = this.createButton("开始造火箭", 440, 96, "#2588C3");
+      const start = this.createButton("开始造火箭", 440, 96, "#E39B39");
       start.pos((width - 440) / 2, 945);
       start.once(Laya.Event.CLICK, this, onStart);
       panel.addChild(start);
@@ -1761,6 +1782,9 @@
       button.graphics.drawRect(6, 6, width - 12, height - 17, color);
       button.graphics.drawRect(14, 12, width - 28, 5, "#FFFFFF33");
       button.mouseEnabled = true;
+      button.on(Laya.Event.MOUSE_DOWN, this, () => button.scale(0.975, 0.975));
+      button.on(Laya.Event.MOUSE_UP, this, () => button.scale(1, 1));
+      button.on(Laya.Event.MOUSE_OUT, this, () => button.scale(1, 1));
       this.addText(
         button,
         textValue,
@@ -2733,6 +2757,7 @@
       this.root = root;
       this.panel = new Laya.Sprite();
       this.toast = new Laya.Text();
+      this.toastPlate = new Laya.Sprite();
       this.toastRemainingMs = 0;
       this.fuelBar = new Laya.Sprite();
       this.lastBarKey = "";
@@ -2748,6 +2773,8 @@
       this.title.text = "抢先登陆火星";
       this.title.color = "#FFFFFF";
       this.title.fontSize = 28;
+      this.title.stroke = 2;
+      this.title.strokeColor = "#071D37";
       this.title.bold = true;
       this.title.align = "center";
       this.root.addChild(
@@ -2786,7 +2813,13 @@
       this.root.addChild(
         this.runInfo
       );
+      this.toastPlate.name = "mission_feedback_plate";
+      this.toastPlate.mouseEnabled = false;
+      this.toastPlate.visible = false;
+      this.root.addChild(this.toastPlate);
       this.toast.color = "#FFE08A";
+      this.toast.stroke = 2;
+      this.toast.strokeColor = "#10243B";
       this.toast.fontSize = 25;
       this.toast.bold = true;
       this.toast.align = "center";
@@ -2803,7 +2836,8 @@
       this.fuel.visible = value;
       this.health.visible = value;
       this.runInfo.visible = value;
-      this.toast.visible = value;
+      this.toast.visible = value && this.toastRemainingMs > 0;
+      this.toastPlate.visible = value && this.toastRemainingMs > 0;
       if (!value) this.toast.text = "";
     }
     layout() {
@@ -2821,7 +2855,13 @@
       this.fuelBar.pos(30, 165);
       this.health.size(width, 32).pos(0, 181);
       this.runInfo.size(width, 52).pos(0, 215);
-      this.toast.size(width, 42).pos(0, 320);
+      this.toast.size(width, 52).pos(0, 320);
+      this.toastPlate.graphics.clear();
+      const plateWidth = Math.min(width - 80, 560);
+      this.toastPlate.graphics.drawRect(3, 7, plateWidth - 6, 49, "#051B30A8");
+      this.toastPlate.graphics.drawRect(0, 0, plateWidth, 48, "#163E5FD9", "#9FE2F6", 2);
+      this.toastPlate.graphics.drawRect(12, 5, plateWidth - 24, 3, "#FFE4A777");
+      this.toastPlate.pos((width - plateWidth) / 2, 320);
       this.lastBarKey = "";
     }
     showMilestone(meters) {
@@ -2850,12 +2890,14 @@
       if (this.toastRemainingMs <= 0) {
         this.toast.text = "";
         this.toast.visible = false;
+        this.toastPlate.visible = false;
       }
     }
     showToast(message) {
       this.toast.visible = true;
+      this.toastPlate.visible = true;
       this.toast.text = message;
-      this.toastRemainingMs = 1200;
+      this.toastRemainingMs = 1250;
     }
     setProgress(current, total, message = "") {
       this.status.text = message || `搭建进度 ${current} / ${total}`;
@@ -2865,6 +2907,7 @@
       this.fuelBar.visible = false;
       this.health.visible = false;
       this.toast.visible = false;
+      this.toastPlate.visible = false;
       this.toastRemainingMs = 0;
       this.setBuildingHint();
     }
@@ -2877,6 +2920,7 @@
       this.fuelBar.visible = false;
       this.health.visible = false;
       this.toast.visible = false;
+      this.toastPlate.visible = false;
       this.toastRemainingMs = 0;
     }
     setBuildReady(metrics, luckyCount) {
@@ -3008,6 +3052,7 @@
       this.fuelBar.visible = false;
       this.health.visible = false;
       this.toast.visible = false;
+      this.toastPlate.visible = false;
       this.toastRemainingMs = 0;
     }
     setRunProgress(altitudeMeters, bestMeters, runMetal, runChips, newRecord) {
@@ -3024,8 +3069,8 @@
 金属 ${runMetal}  ·  芯片 ${runChips}${newRecord && bestMeters > 0 ? "  ·  新纪录" : ""}`;
     }
     setAccountSummary(marsCoins, metal, chips, bestMeters) {
-      this.runInfo.text = `纪录 ${this.formatAltitude(bestMeters)}  ·  火星币 ${marsCoins}
-金属 ${metal}  ·  芯片 ${chips}${bestMeters < 200 ? "  ·  首航200米领升级材料" : ""}`;
+      this.runInfo.text = `历史高度 ${this.formatAltitude(bestMeters)}  ·  火星币 ${marsCoins}
+金属 ${metal}  ·  芯片 ${chips}`;
     }
     renderFuel(stage, fuelRatio) {
       this.fuel.visible = true;
