@@ -1555,22 +1555,22 @@
       flame.graphics.drawPoly(0, 0, [-7, 0, 0, 43, 7, 0], "#FFE3A5");
       flame.pos(width / 2, y);
       panel.addChild(flame);
-      this.addText(panel, `历史最高  ${this.formatAltitude(progress.bestAltitudeMeters)}`, 0, 840, width, 48, 33, "#FFE6A9", true);
-      this.addText(panel, `火星币 ${progress.marsCoins}  ·  金属 ${progress.metal}  ·  芯片 ${progress.chips}`, 20, 897, width - 40, 42, 26, "#ADE6DF", false);
+      this.addText(panel, `历史最高  ${this.formatAltitude(progress.bestAltitudeMeters)}`, 0, 827, width, 48, 33, "#FFE6A9", true);
+      this.addText(panel, `火星币 ${progress.marsCoins}  ·  金属 ${progress.metal}  ·  芯片 ${progress.chips}`, 20, 881, width - 40, 42, 26, "#ADE6DF", false);
       const start = this.createButton("开始造火箭", 440, 96, "#2588C3");
-      start.pos((width - 440) / 2, 976);
+      start.pos((width - 440) / 2, 945);
       start.once(Laya.Event.CLICK, this, onStart);
       panel.addChild(start);
       const available = options.filter((o) => o.canUpgrade).length;
       const upgrade = this.createButton(available ? `升级  ·  ${available} 项可提升` : "升级", 340, 76, "#284963");
-      upgrade.pos((width - 340) / 2, 1096);
+      upgrade.pos((width - 340) / 2, 1060);
       upgrade.once(Laya.Event.CLICK, this, () => {
         this.refreshView = () => this.show(progress, options, onStart, onUpgrade, true);
         this.renderUpgrade(panel, progress, options, onStart, onUpgrade);
       });
       panel.addChild(upgrade);
       const audio = this.createButton(GameAudio.isMuted ? "音效：关" : "音效：开", 180, 54, "#24415D");
-      audio.pos((width - 180) / 2, 1150);
+      audio.pos((width - 180) / 2, 1160);
       audio.on(Laya.Event.CLICK, this, () => {
         GameAudio.toggle();
         this.renderMain(panel, progress, options, onStart, onUpgrade);
