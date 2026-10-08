@@ -17,5 +17,15 @@
   ],
   "visualOnly": true,
   "previewNote": "Hand-synchronized compiled visual patch; original core gameplay bundle unchanged; official LayaAir CI pending runner availability",
-  "newCosmeticAnimation": "pickup pulse + asteroid sprite roll, sensors unchanged"
+  "newCosmeticAnimation": "pickup pulse + asteroid sprite roll, sensors unchanged",
+  "visualPatchThroughCommit": "da4319b97d284a3a3cf27a44312eb3239386dd37",
+  "visualFeatures": [
+    "gold launch button",
+    "two-stage rocket flame",
+    "dual astronaut jets",
+    "pooled separation and escape shockwaves",
+    "compact build-only module labels",
+    "hidden module lettering during flight"
+  ],
+  "provenanceNote": "Compiled visual-only preview patches mirrored from main, not a new official LayaAir build"
 }
