@@ -218,7 +218,7 @@ jobs:
         run: |
           expected="$(sha256sum js/bundle.js | awk '{print $1}')"
           for attempt in $(seq 1 8); do
-            actual="$(curl -fsSL --max-time 10 'https://baimagod.github.io/dengluhuoxing-preview/js/bundle.js?run='\"$GITHUB_SHA\" | sha256sum | awk '{print $1}' || true)"
+            actual="$(curl -fsSL --max-time 10 "https://baimagod.github.io/dengluhuoxing-preview/js/bundle.js?rev=$GITHUB_SHA" | sha256sum | awk '{print $1}' || true)"
             if [ "$actual" = "$expected" ]; then echo 'Live Pages matches local QA build'; exit 0; fi
             sleep 5
           done
