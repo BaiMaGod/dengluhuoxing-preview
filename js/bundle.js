@@ -4837,15 +4837,10 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
         Laya.stage.width / 2,
         282
       );
-      button.graphics.drawRect(
-        0,
-        0,
-        width,
-        height,
-        "#2B78D0",
-        "#77B9FF",
-        3
-      );
+      button.graphics.drawRect(5, 8, width-10, height-5, "#081628");
+      button.graphics.drawRect(0, 0, width, height-6, "#4B2C23", "#FFE2A2", 3);
+      button.graphics.drawRect(6, 6, width-12, height-17, "#E39B39");
+      button.graphics.drawRect(16, 12, width-32, 5, "#FFF2C988");
       button.mouseEnabled = true;
       const text = new Laya.Text();
       text.text = labelText;
