@@ -69,7 +69,7 @@ jobs:
             const expectedArt=["stage1_engine","stage1_tank","stage2_engine","stage2_tank","escape","cockpit","astronaut","asteroid","fuel","metal","chip","suit_energy","hud_panel"];
             await page.waitForFunction((names)=>names.every(n=>!!globalThis.Laya?.loader?.getRes("art/kit/"+n+".png")),expectedArt,{timeout:20000});
             for (const name of expectedArt) {
-              const response=await page.request.get(new URL("art/kit/"+name+".png",url));
+              const response=await page.request.get(new URL("art/kit/"+name+".png",url).toString());
               assert.equal(response.status(),200,"Missing published art "+name);
               assert.ok((await response.body()).byteLength>5000,"Unexpected tiny art "+name);
             }
