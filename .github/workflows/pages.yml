@@ -42,6 +42,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Install Chinese fonts for accurate visual QA
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
       - name: Verify live game
         env:
           PREVIEW_URL: ${{ steps.deployment.outputs.page_url }}
@@ -70,6 +72,7 @@ jobs:
               const p=find(Laya.stage);return p&&{x:p.x/Laya.stage.width*390,y:p.y/Laya.stage.height*844};
             });
             assert.ok(p,"Live home screen has the start button");
+            await page.screenshot({path:"live-home.png"});
             await page.mouse.click(p.x,p.y);
             await page.waitForFunction(()=>{
               function find(n){if(n.text?.startsWith("一级发动机"))return true;for(let i=0;i<n.numChildren;i++)if(find(n.getChildAt(i)))return true;return false;}
@@ -84,5 +87,7 @@ jobs:
         if: always()
         with:
           name: live-preview-check
-          path: live-game.png
+          path: |
+            live-home.png
+            live-game.png
           if-no-files-found: ignore
