@@ -2935,6 +2935,7 @@
       this.health.text = "";
       this.fuelBar.visible = false;
       this.toast.visible = false;
+      this.toastPlate.visible = false;
     }
     setIgnition(metrics, hp, maxHp) {
       const percent = Math.round(
