@@ -1,22 +1,17 @@
-name: Deploy Mars Web preview
+name: Verify Mars Web preview
 on:
   push:
     branches: ["main"]
   workflow_dispatch:
 permissions:
   contents: read
-  pages: write
-  id-token: write
 concurrency:
-  group: pages
+  group: mars-preview-qa
   cancel-in-progress: true
 jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - name: Validate published version
@@ -30,15 +25,22 @@ jobs:
           assert v["sourceRepository"] == "BaiMaGod/dengluhuoxing" and v["sourceCommit"] == "b4ca19d63ff7b55b690cf976b6e05785d4b91aa6"
           print("Publishing verified main",v["sourceCommit"])
           PY
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-      - name: Upload Web files
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: .
-      - name: Deploy Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Wait for branch-published Pages to match current bundle
+        env:
+          PREVIEW_URL: https://baimagod.github.io/dengluhuoxing-preview/
+        run: |
+          set -euo pipefail
+          expected="$(sha256sum js/bundle.js | awk '{print $1}')"
+          for attempt in $(seq 1 36); do
+            current="$(curl --fail --silent --show-error --max-time 15 "$PREVIEW_URL/js/bundle.js?rev=$GITHUB_SHA" | sha256sum | awk '{print $1}' || true)"
+            if [ "$current" = "$expected" ]; then
+              echo "Live Pages content matches current main branch"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Published Web bundle never matched this commit"
+          exit 1
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
@@ -46,7 +48,7 @@ jobs:
         run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
       - name: Verify live game
         env:
-          PREVIEW_URL: ${{ steps.deployment.outputs.page_url }}
+          PREVIEW_URL: https://baimagod.github.io/dengluhuoxing-preview/
         run: |
           set -euo pipefail
           npm install --no-save --ignore-scripts playwright-core@1.55.0 > /dev/null
