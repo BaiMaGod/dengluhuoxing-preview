@@ -1130,6 +1130,7 @@
       this.horizontalVelocity = 0;
       this.lastEnergyPercent = -1;
       this.thrust = new Laya.Sprite();
+      this.secondThrust = new Laya.Sprite();
       this.animationMs = 0;
       const node = this.node = new Laya.Sprite();
       node.name = "astronaut_player";
@@ -1160,9 +1161,15 @@
         )
       );
       GameplayArt.astronaut(node.graphics, width, height);
-      this.thrust.graphics.drawPoly(0, 0, [-5, 0, 0, 22, 5, 0], "#FFB87B");
-      this.thrust.pos(8, 56);
-      node.addChild(this.thrust);
+      for (const jet of [this.thrust, this.secondThrust]) {
+        jet.graphics.drawCircle(0, 2, 8, "#6FCBFF66");
+        jet.graphics.drawPoly(0, 0, [-6,0,-4,12,0,27,4,12,6,0], "#FF974C");
+        jet.graphics.drawPoly(0, 0, [-3,0,0,19,3,0], "#FFF2BC");
+        jet.mouseEnabled = false;
+        node.addChild(jet);
+      }
+      this.thrust.pos(12,63);
+      this.secondThrust.pos(43,63);
       parent.addChild(node);
       const body = this.body = node.addComponent(
         Laya.RigidBody
@@ -1225,7 +1232,11 @@
         return;
       }
       this.animationMs += deltaMs;
-      this.thrust.scale(1, 0.75 + Math.sin(this.animationMs / 85) * 0.2);
+      const flicker = 0.84 + Math.sin(this.animationMs / 91) * 0.16;
+      this.thrust.scale(1, flicker);
+      this.secondThrust.scale(1, 1.08 - (flicker - 0.84));
+      this.thrust.alpha = 0.9;
+      this.secondThrust.alpha = 0.9;
       this.energyRatio = Math.max(
         0,
         this.energyRatio - deltaMs / (Math.max(
@@ -3171,9 +3182,14 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
         definition.height
       );
       node.addChild(label);
-      this.exhaust.graphics.drawPoly(0, 0, [-18, 0, 0, 66, 18, 0], "#FF8A4D");
-      this.exhaust.graphics.drawPoly(0, 0, [-10, 0, 0, 45, 10, 0], "#FFE59A");
+      const plume = this.exhaust.graphics;
+      plume.drawCircle(0, 8, 27, "#75DFFF44");
+      plume.drawPoly(0, 0, [-25,-3,-20,19,-13,53,0,112,13,53,20,19,25,-3], "#F16B37");
+      plume.drawPoly(0, 0, [-17,-3,-11,21,-8,56,0,91,8,56,11,21,17,-3], "#FFAD49");
+      plume.drawPoly(0, 0, [-9,-4,-6,24,-3,52,0,72,3,52,6,24,9,-4], "#FFF7CE");
+      plume.drawCircle(0, 2, 13, "#DDFBFF");
       this.exhaust.visible = false;
+      this.exhaust.mouseEnabled = false;
       node.addChild(this.exhaust);
       const body = this.body = node.addComponent(
         Laya.RigidBody
@@ -3240,8 +3256,10 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
     }
     setThrust(active, pulse = 1) {
       this.exhaust.visible = active;
+      if (!active) return;
       this.exhaust.pos(this.node.width / 2, this.node.height);
-      this.exhaust.scale(0.7, pulse * 0.7);
+      this.exhaust.scale(0.78 + 0.04 * (pulse - 0.9), Math.max(0.52, pulse * 0.88));
+      this.exhaust.alpha = Math.min(1, 0.88 + (pulse - 0.86) * 0.22);
     }
     prepareForFlight() {
       this.body.type = "dynamic";
