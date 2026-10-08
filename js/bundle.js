@@ -3182,6 +3182,7 @@
       this.level = level;
       this.baseLevel = baseLevel;
       this.exhaust = new Laya.Sprite();
+      this.labelPlate = new Laya.Sprite();
       this.released = false;
       this.settled = false;
       this.stableMs = 0;
@@ -3201,25 +3202,27 @@
       );
       this.drawModule(definition.width, definition.height);
       const label = this.label = new Laya.Text();
-      label.text = `${definition.label}
-Lv.${level}${this.isLucky ? " ✦" : ""}`;
+      label.text = `${definition.label}  Lv.${level}${this.isLucky ? " ✦" : ""}`;
       label.color = "#FFFFFF";
       label.stroke = 2; label.strokeColor = "#142840";
-      label.fontSize = 24;
+      label.fontSize = definition.width < 150 ? 17 : 19;
       label.bold = true;
       label.align = "center";
       label.valign = "middle";
-      label.size(
-        definition.width,
-        definition.height
-      );
+      label.size(definition.width, Math.round(definition.height * 0.28));
+      label.pos(0, Math.round(definition.height * 0.69));
+      const ribbon = this.labelPlate;
+      ribbon.mouseEnabled = false;
+      ribbon.graphics.drawRect(10,definition.height*.68,definition.width-20,definition.height*.30,"#07192BD9");
+      ribbon.graphics.drawRect(13,definition.height*.68,definition.width-26,2,"#A5D6EA88");
+      node.addChild(ribbon);
       node.addChild(label);
       const plume = this.exhaust.graphics;
-      plume.drawCircle(0, 8, 27, "#75DFFF44");
-      plume.drawPoly(0, 0, [-25,-3,-20,19,-13,53,0,112,13,53,20,19,25,-3], "#F16B37");
-      plume.drawPoly(0, 0, [-17,-3,-11,21,-8,56,0,91,8,56,11,21,17,-3], "#FFAD49");
-      plume.drawPoly(0, 0, [-9,-4,-6,24,-3,52,0,72,3,52,6,24,9,-4], "#FFF7CE");
-      plume.drawCircle(0, 2, 13, "#DDFBFF");
+      plume.drawCircle(0, 6, 39, "#75DFFF44");
+      plume.drawPoly(0, 0, [-38,-5,-29,23,-20,75,0,196,20,75,29,23,38,-5], "#F16B37");
+      plume.drawPoly(0, 0, [-27,-5,-16,28,-11,77,0,163,11,77,16,28,27,-5], "#FFAD49");
+      plume.drawPoly(0, 0, [-14,-5,-9,32,-5,78,0,128,5,78,9,32,14,-5], "#FFF7CE");
+      plume.drawCircle(0, 2, 18, "#DDFBFF");
       this.exhaust.visible = false;
       this.exhaust.mouseEnabled = false;
       node.addChild(this.exhaust);
@@ -3278,10 +3281,8 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
       const w = this.definition.width * scale, h = this.definition.height * scale;
       this.node.size(w, h).pivot(w / 2, h / 2);
       this.drawModule(w, h);
-      this.label.size(w, h);
-      this.label.text = `Lv.${this.level}${this.isLucky ? " ✦" : ""}`;
-      this.label.fontSize = 23;
-      this.label.valign = "bottom";
+      this.labelPlate.visible = false;
+      this.label.visible = false;
       this.shape.width = w;
       this.shape.height = h;
       this.body.shapes = [this.shape];
@@ -3290,7 +3291,7 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
       this.exhaust.visible = active;
       if (!active) return;
       this.exhaust.pos(this.node.width / 2, this.node.height);
-      this.exhaust.scale(0.78 + 0.04 * (pulse - 0.9), Math.max(0.52, pulse * 0.88));
+      this.exhaust.scale(0.9 + 0.06 * (pulse - 0.9), Math.max(0.82, pulse * 1.12));
       this.exhaust.alpha = Math.min(1, 0.88 + (pulse - 0.86) * 0.22);
     }
     prepareForFlight() {
