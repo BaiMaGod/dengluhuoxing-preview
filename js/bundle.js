@@ -1570,8 +1570,8 @@
       const recordPlate = new Laya.Sprite();
       recordPlate.name = "home_stats_backdrop";
       recordPlate.mouseEnabled = false;
-      if (!GameplayArt.paint(recordPlate.graphics, "hud_panel", Math.min(width - 100, 615), 136)) {
-        recordPlate.graphics.drawRect(0, 0, Math.min(width - 100, 615), 136, "#12314BBA", "#7EC8DD", 2);
+      if (!GameplayArt.paint(recordPlate.graphics, "hud_panel", Math.min(width - 100, 615), 120)) {
+        recordPlate.graphics.drawRect(0, 0, Math.min(width - 100, 615), 120, "#12314BBA", "#7EC8DD", 2);
       }
       recordPlate.alpha = 0.85;
       recordPlate.pos((width - Math.min(width - 100, 615)) / 2, 815);
