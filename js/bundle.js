@@ -228,12 +228,12 @@
     static unlock() {
       var _a, _b, _c, _d;
       if (this.isMuted) return;
-      const g = globalThis;
-      const AudioContext = g.AudioContext || g.webkitAudioContext;
+      const g = globalThis, AudioContext = g.AudioContext || g.webkitAudioContext;
       if (!this.context && AudioContext) {
         try {
           this.context = new AudioContext();
         } catch (e) {
+          return;
         }
       }
       (_d = (_c = (_b = (_a = this.context) == null ? void 0 : _a.resume) == null ? void 0 : _b.call(_a)) == null ? void 0 : _c.catch) == null ? void 0 : _d.call(_c, () => {
@@ -244,38 +244,65 @@
       (_d = (_c = (_b = (_a = this.context) == null ? void 0 : _a.suspend) == null ? void 0 : _b.call(_a)) == null ? void 0 : _c.catch) == null ? void 0 : _d.call(_c, () => {
       });
     }
+    static note(ctx, at, frequency, duration, volume, wave = "sine", endFrequency = frequency) {
+      const osc = ctx.createOscillator(), gain = ctx.createGain();
+      osc.type = wave;
+      osc.frequency.setValueAtTime(frequency, at);
+      osc.frequency.exponentialRampToValueAtTime(Math.max(30, endFrequency), at + duration);
+      gain.gain.setValueAtTime(1e-4, at);
+      gain.gain.exponentialRampToValueAtTime(Math.max(2e-4, volume), at + Math.min(0.018, duration / 5));
+      gain.gain.exponentialRampToValueAtTime(1e-4, at + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.onended = () => {
+        osc.disconnect();
+        gain.disconnect();
+      };
+      osc.start(at);
+      osc.stop(at + duration + 0.01);
+    }
     static play(sound) {
       const ctx = this.context;
       if (this.isMuted || !ctx || ctx.state !== "running") return;
       const now = Date.now();
-      if (now - (this.lastPlayed.get(sound) || 0) < 90) return;
+      const cooldown = sound === "pickup" ? 105 : sound === "hit" ? 165 : 75;
+      if (now - (this.lastPlayed.get(sound) || 0) < cooldown) return;
       this.lastPlayed.set(sound, now);
-      const notes = {
-        land: [240, 170],
-        ignite: [180, 420, 620],
-        separate: [460, 300],
-        hit: [170, 90],
-        pickup: [620, 830],
-        record: [523, 659, 784, 1047]
-      };
+      const t = ctx.currentTime + 5e-3;
       try {
-        notes[sound].forEach((frequency, i) => {
-          const start = ctx.currentTime + i * 0.065;
-          const osc = ctx.createOscillator(), gain = ctx.createGain();
-          osc.type = sound === "hit" ? "triangle" : "sine";
-          osc.frequency.setValueAtTime(frequency, start);
-          gain.gain.setValueAtTime(1e-3, start);
-          gain.gain.exponentialRampToValueAtTime(0.07, start + 8e-3);
-          gain.gain.exponentialRampToValueAtTime(1e-3, start + 0.14);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.onended = () => {
-            osc.disconnect();
-            gain.disconnect();
-          };
-          osc.start(start);
-          osc.stop(start + 0.15);
-        });
+        switch (sound) {
+          case "land":
+            this.note(ctx, t, 228, 0.135, 0.065, "triangle", 115);
+            this.note(ctx, t + 0.027, 392, 0.105, 0.021, "sine", 250);
+            break;
+          case "ignite":
+            this.note(ctx, t, 110, 0.48, 0.065, "sawtooth", 430);
+            this.note(ctx, t + 0.085, 215, 0.38, 0.035, "triangle", 585);
+            this.note(ctx, t + 0.28, 760, 0.16, 0.02, "sine", 950);
+            break;
+          case "separate":
+            this.note(ctx, t, 420, 0.2, 0.065, "triangle", 155);
+            this.note(ctx, t + 0.13, 260, 0.32, 0.045, "sawtooth", 82);
+            break;
+          case "hit":
+            this.note(ctx, t, 205, 0.28, 0.09, "sawtooth", 55);
+            this.note(ctx, t + 0.04, 97, 0.23, 0.05, "triangle", 48);
+            break;
+          case "pickup":
+            this.note(ctx, t, 650, 0.16, 0.047, "sine", 850);
+            this.note(ctx, t + 0.075, 988, 0.23, 0.038, "sine", 1175);
+            break;
+          case "record":
+            [523, 659, 784, 1047, 1318].forEach((hz, i) => {
+              this.note(ctx, t + i * 0.088, hz, 0.26, 0.037, "sine", hz * 1.04);
+            });
+            break;
+          case "upgrade":
+            [440, 660, 880, 1320].forEach((hz, i) => {
+              this.note(ctx, t + i * 0.075, hz, 0.23, 0.041, "triangle", hz * 1.08);
+            });
+            break;
+        }
       } catch (e) {
       }
     }
@@ -284,39 +311,203 @@
   GameAudio.muted = null;
   GameAudio.lastPlayed = /* @__PURE__ */ new Map();
 
+  // assets/scripts/prototype/PauseOverlay.ts
+  var PauseOverlay = class {
+    constructor(root, onToggle) {
+      this.root = root;
+      this.onToggle = onToggle;
+      this.button = new Laya.Sprite();
+      this.modal = null;
+      this.active = false;
+      this.paused = false;
+      this.button.name = "mission_pause_button";
+      this.button.size(120, 60);
+      this.button.mouseEnabled = true;
+      this.button.graphics.drawRect(0, 0, 120, 60, "#16304BCC", "#83D6E9", 2);
+      this.button.graphics.drawRect(9, 8, 102, 4, "#FFFFFF55");
+      this.label(this.button, "暂停", 0, 0, 120, 60, 26, "#EFF9FF", true);
+      this.button.on(Laya.Event.CLICK, this, () => {
+        if (this.active && !this.paused) this.onToggle(true);
+      });
+      this.root.addChild(this.button);
+      this.button.visible = false;
+      this.layout();
+    }
+    get isPaused() {
+      return this.paused;
+    }
+    get isActive() {
+      return this.active;
+    }
+    setActive(value) {
+      this.active = value;
+      this.button.visible = value && !this.paused;
+    }
+    setPaused(value) {
+      var _a;
+      if (this.paused === value) return;
+      this.paused = value;
+      this.button.visible = this.active && !value;
+      if (value) this.drawModal();
+      else {
+        (_a = this.modal) == null ? void 0 : _a.destroy(true);
+        this.modal = null;
+      }
+    }
+    layout() {
+      this.button.pos(Laya.stage.width - 137, 16);
+      if (this.paused) this.drawModal();
+    }
+    drawModal() {
+      var _a;
+      (_a = this.modal) == null ? void 0 : _a.destroy(true);
+      const w = Laya.stage.width, h = Laya.stage.height;
+      const overlay = this.modal = new Laya.Sprite();
+      overlay.name = "pause_overlay";
+      overlay.size(w, h);
+      overlay.mouseEnabled = true;
+      overlay.graphics.drawRect(0, 0, w, h, "#03091BCB");
+      this.root.addChild(overlay);
+      const cw = Math.min(594, w - 48), ch = 520;
+      const x = (w - cw) / 2, y = (h - ch) / 2;
+      overlay.graphics.drawRect(x + 9, y + 12, cw, ch, "#050B18AA");
+      overlay.graphics.drawRect(x, y, cw, ch, "#152946", "#7BCFDF", 4);
+      overlay.graphics.drawRect(x + 11, y + 11, cw - 22, 8, "#6AC9E1");
+      overlay.graphics.drawRect(x + 30, y + 137, cw - 60, 2, "#567B97");
+      this.label(overlay, "远征已暂停", x + 22, y + 44, cw - 44, 68, 45, "#FFF2D9", true);
+      this.label(overlay, "火箭燃料和物理模拟均已冻结", x + 18, y + 154, cw - 36, 52, 25, "#B9DDE9", false);
+      this.label(overlay, "可随时继续当前火箭，不会丢失进度", x + 18, y + 205, cw - 36, 52, 23, "#94B7CD", false);
+      const resume = this.makeButton("继续远征", 360, 87, "#2584BF");
+      resume.pos((w - 360) / 2, y + 310);
+      resume.on(Laya.Event.CLICK, this, () => this.onToggle(false));
+      overlay.addChild(resume);
+      const sound = this.makeButton(GameAudio.isMuted ? "打开音效" : "关闭音效", 280, 58, "#26445C");
+      sound.pos((w - 280) / 2, y + 422);
+      sound.on(Laya.Event.CLICK, this, () => {
+        GameAudio.toggle();
+        this.drawModal();
+      });
+      overlay.addChild(sound);
+    }
+    makeButton(title, w, h, color) {
+      const node = new Laya.Sprite();
+      node.size(w, h);
+      node.mouseEnabled = true;
+      node.graphics.drawRect(5, 7, w - 10, h - 7, "#071425");
+      node.graphics.drawRect(0, 0, w, h - 5, "#142C47", "#9BE7F6", 2);
+      node.graphics.drawRect(6, 6, w - 12, h - 18, color);
+      node.graphics.drawRect(16, 11, w - 32, 4, "#FFFFFF45");
+      this.label(node, title, 0, 0, w, h - 4, h > 70 ? 32 : 25, "#FFFFFF", true);
+      return node;
+    }
+    label(root, text, x, y, w, h, size, color, bold) {
+      const label = new Laya.Text();
+      label.text = text;
+      label.color = color;
+      label.bold = bold;
+      label.fontSize = size;
+      label.align = "center";
+      label.valign = "middle";
+      label.size(w, h);
+      label.pos(x, y);
+      root.addChild(label);
+    }
+  };
+
   // assets/scripts/prototype/FlightFeedback.ts
   var FlightFeedback = class {
     constructor(root) {
       this.root = root;
-      this.items = [];
+      this.labels = [];
+      this.sparks = [];
+      this.textPool = [];
+      this.sparkPool = [];
+      this.serial = 0;
     }
-    show(x, y, message, color = "#FFE7AE") {
-      if (this.items.length >= 12) this.items.shift().node.destroy(true);
-      const node = new Laya.Text();
-      node.text = message;
-      node.fontSize = 27;
-      node.bold = true;
-      node.color = color;
-      node.align = "center";
-      node.size(240, 40).pivot(120, 20).pos(x, y);
-      this.root.addChild(node);
-      this.items.push({ node, age: 0, startY: y });
+    show(x, y, message, color = "#FFE7AE", tier = "small") {
+      if (this.labels.length >= 12) this.recycleText(this.labels.shift().node);
+      const text = this.textPool.pop() || new Laya.Text();
+      const font = tier === "major" ? 42 : tier === "medium" ? 33 : 28;
+      text.text = message;
+      text.fontSize = font;
+      text.bold = true;
+      text.color = color;
+      text.stroke = 2;
+      text.strokeColor = "#102842";
+      text.align = "center";
+      text.valign = "middle";
+      text.size(380, 64).pivot(190, 32).pos(x, y);
+      text.alpha = 1;
+      text.visible = true;
+      this.root.addChild(text);
+      this.labels.push({ node: text, age: 0, y, duration: tier === "major" ? 1250 : 850 });
+      this.burst(x, y + 18, color, tier);
+    }
+    burst(x, y, color, tier = "medium") {
+      const count = tier === "major" ? 15 : tier === "medium" ? 9 : 5;
+      const radius = tier === "major" ? 11 : tier === "medium" ? 7 : 5;
+      const duration = tier === "major" ? 680 : 500;
+      for (let i = 0; i < count; i++) {
+        if (this.sparks.length >= 48) this.recycleSpark(this.sparks.shift().node);
+        const sprite = this.sparkPool.pop() || new Laya.Sprite();
+        sprite.graphics.clear();
+        sprite.graphics.drawCircle(0, 0, radius * (0.65 + i % 4 * 0.13), color);
+        sprite.graphics.drawCircle(-1, -1, Math.max(1, radius * 0.28), "#FFFFFF");
+        const angle = i / count * Math.PI * 2 + this.serial % 7 * 0.08;
+        const speed = (tier === "major" ? 0.25 : 0.17) * (0.75 + i % 3 * 0.2);
+        sprite.alpha = 1;
+        sprite.visible = true;
+        sprite.scale(1, 1);
+        sprite.pos(x, y);
+        this.root.addChild(sprite);
+        this.sparks.push({ node: sprite, age: 0, lifetime: duration + i % 3 * 70, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - 0.05, x, y });
+      }
+      this.serial++;
     }
     update(dt) {
-      for (let i = this.items.length - 1; i >= 0; i--) {
-        const item = this.items[i];
+      for (let i = this.labels.length - 1; i >= 0; i--) {
+        const item = this.labels[i];
         item.age += dt;
-        item.node.y = item.startY - item.age * 0.045;
-        item.node.alpha = Math.min(1, (900 - item.age) / 300);
-        if (item.age >= 900) {
-          item.node.destroy(true);
-          this.items.splice(i, 1);
+        const t = Math.min(1, item.age / item.duration);
+        item.node.y = item.y - 64 * (1 - Math.pow(1 - t, 2));
+        item.node.scale(1 + 0.08 * (1 - t), 1 + 0.08 * (1 - t));
+        item.node.alpha = t < 0.64 ? 1 : Math.max(0, (1 - t) / 0.36);
+        if (t >= 1) {
+          this.recycleText(item.node);
+          this.labels.splice(i, 1);
+        }
+      }
+      for (let i = this.sparks.length - 1; i >= 0; i--) {
+        const item = this.sparks[i];
+        item.age += dt;
+        const t = Math.min(1, item.age / item.lifetime);
+        item.node.pos(item.x + item.vx * item.age, item.y + item.vy * item.age + 2e-4 * item.age * item.age);
+        item.node.alpha = Math.max(0, 1 - t * t);
+        const scale = Math.max(0.12, 1 - t * 0.8);
+        item.node.scale(scale, scale);
+        if (t >= 1) {
+          this.recycleSpark(item.node);
+          this.sparks.splice(i, 1);
         }
       }
     }
     clear() {
-      for (const item of this.items) item.node.destroy(true);
-      this.items.length = 0;
+      for (const item of this.labels) this.recycleText(item.node);
+      this.labels.length = 0;
+      for (const item of this.sparks) this.recycleSpark(item.node);
+      this.sparks.length = 0;
+    }
+    recycleText(node) {
+      node.removeSelf();
+      node.visible = false;
+      if (this.textPool.length < 12) this.textPool.push(node);
+      else node.destroy(true);
+    }
+    recycleSpark(node) {
+      node.removeSelf();
+      node.visible = false;
+      if (this.sparkPool.length < 48) this.sparkPool.push(node);
+      else node.destroy(true);
     }
   };
 
@@ -1104,6 +1295,7 @@
       this.visible = true;
       this.band = -1;
       this.scenery = new Laya.Sprite();
+      this.illustratedAtmosphere = new Laya.Sprite();
       this.node.name = "flight_backdrop";
       this.node.size(
         Laya.stage.width,
@@ -1129,6 +1321,11 @@
         0
       );
       this.node.addChildAt(this.scenery, 0);
+      this.illustratedAtmosphere.name = "flight_illustrated_background";
+      this.illustratedAtmosphere.mouseEnabled = false;
+      this.scenery.addChild(this.illustratedAtmosphere);
+      this.layoutIllustration();
+      this.illustratedAtmosphere.loadImage("art/mars_flight.png");
       this.drawTheme(0);
       this.createMarkers();
     }
@@ -1140,6 +1337,13 @@
       this.overlay.graphics.drawRect(0, 0, w, h, "#020712");
       this.band = -1;
       this.drawTheme(0);
+      this.layoutIllustration();
+    }
+    layoutIllustration() {
+      const w = Laya.stage.width, h = Laya.stage.height;
+      const scale = Math.max(w / 750, h / 1334);
+      this.illustratedAtmosphere.scale(scale, scale);
+      this.illustratedAtmosphere.pos((w - 750 * scale) / 2, (h - 1334 * scale) / 2);
     }
     setVisible(value) {
       this.visible = value;
@@ -1311,19 +1515,16 @@
       const width = Laya.stage.width;
       const height = Laya.stage.height;
       panel.graphics.clear();
-      panel.graphics.drawRect(0, 0, width, height, "#081426");
-      for (let i = 0; i < 22; i++) panel.graphics.drawCircle(24 + i * 137 % (width - 48), 150 + i * 199 % (height - 190), i % 4 === 0 ? 3 : 2, "#507DA8");
-      panel.graphics.drawCircle(width * 0.86, height * 0.28, 60, "#B17C72");
-      panel.graphics.drawCircle(width * 0.83, height * 0.265, 13, "#8C5E68");
-      panel.graphics.drawCircle(width * 0.88, height * 0.3, 18, "#946370");
-      this.addText(panel, "抢先登陆火星", 0, 70, width, 65, 46, "#F1F8FF", true);
-      this.addText(panel, "亲手搭火箭，冲向下一座高度里程碑", 30, 140, width - 60, 40, 23, "#9DC5E2", false);
+      panel.graphics.drawRect(0, 0, width, height, "#10162F");
+      this.addIllustration(panel);
+      this.addText(panel, "抢先登陆火星", 0, 97, width, 75, 56, "#FFF2DF", true);
+      this.addText(panel, "亲手搭火箭 · 穿越星空 · 挑战新高度", 30, 190, width - 60, 45, 26, "#C4E3F6", false);
       const target = (Math.floor(progress.bestAltitudeMeters / 500) + 1) * 500;
-      this.addText(panel, `下一目标  ${this.formatAltitude(target)}`, 0, 185, width, 40, 27, "#F4CF84", true);
-      let y = 248;
+      this.addText(panel, `下一目标  ${this.formatAltitude(target)}`, 0, 257, width, 50, 31, "#FFD999", true);
+      let y = 330;
       for (const definition of [...GameConfig.modules].reverse()) {
         const module = new Laya.Sprite();
-        const w = definition.width * 0.43, h = definition.height * 0.43;
+        const w = definition.width * 0.52, h = definition.height * 0.52;
         GameplayArt.module(module.graphics, definition.kind, w, h);
         module.pos((width - w) / 2, y);
         panel.addChild(module);
@@ -1334,34 +1535,55 @@
       flame.graphics.drawPoly(0, 0, [-7, 0, 0, 43, 7, 0], "#FFE3A5");
       flame.pos(width / 2, y);
       panel.addChild(flame);
-      this.addText(panel, `历史最高  ${this.formatAltitude(progress.bestAltitudeMeters)}`, 0, 650, width, 45, 30, "#FFE29B", true);
-      this.addText(panel, `火星币 ${progress.marsCoins}  ·  金属 ${progress.metal}  ·  芯片 ${progress.chips}`, 20, 705, width - 40, 38, 23, "#B4E4D0", false);
-      const start = this.createButton("开始造火箭", 410, 92, "#287FC5");
-      start.pos((width - 410) / 2, 790);
+      this.addText(panel, `历史最高  ${this.formatAltitude(progress.bestAltitudeMeters)}`, 0, 832, width, 48, 33, "#FFE6A9", true);
+      this.addText(panel, `火星币 ${progress.marsCoins}  ·  金属 ${progress.metal}  ·  芯片 ${progress.chips}`, 20, 887, width - 40, 42, 26, "#ADE6DF", false);
+      const start = this.createButton("开始造火箭", 440, 96, "#2588C3");
+      start.pos((width - 440) / 2, 976);
       start.once(Laya.Event.CLICK, this, onStart);
       panel.addChild(start);
       const available = options.filter((o) => o.canUpgrade).length;
       const upgrade = this.createButton(available ? `升级  ·  ${available} 项可提升` : "升级", 340, 76, "#284963");
-      upgrade.pos((width - 340) / 2, 907);
+      upgrade.pos((width - 340) / 2, 1096);
       upgrade.once(Laya.Event.CLICK, this, () => {
         this.refreshView = () => this.show(progress, options, onStart, onUpgrade, true);
         this.renderUpgrade(panel, progress, options, onStart, onUpgrade);
       });
       panel.addChild(upgrade);
       const audio = this.createButton(GameAudio.isMuted ? "音效：关" : "音效：开", 180, 54, "#24415D");
-      audio.pos((width - 180) / 2, 1010);
+      audio.pos((width - 180) / 2, 1201);
       audio.on(Laya.Event.CLICK, this, () => {
         GameAudio.toggle();
         this.renderMain(panel, progress, options, onStart, onUpgrade);
       });
       panel.addChild(audio);
-      this.addText(panel, "搭稳 → 点火 → 分离 → 逃生 → 升级", 20, Math.max(1060, height - 110), width - 40, 40, 23, "#7FA5C4", false);
+      this.addText(panel, "搭稳  ·  点火  ·  分离  ·  逃生  ·  升级", 20, height - 98, width - 40, 44, 23, "#96C3D7", false);
+    }
+    /** Art stays separate from physics and falls back to the solid fill if unavailable. */
+    addIllustration(panel) {
+      const w = Laya.stage.width, h = Laya.stage.height;
+      const scene = new Laya.Sprite();
+      scene.name = "mission_illustrated_background";
+      const scale = Math.max(w / 750, h / 1334);
+      scene.scale(scale, scale);
+      scene.pos((w - 750 * scale) / 2, (h - 1334 * scale) / 2);
+      scene.loadImage("art/mars_home.png");
+      scene.mouseEnabled = false;
+      panel.addChildAt(scene, 0);
+      const footShade = new Laya.Sprite();
+      footShade.mouseEnabled = false;
+      footShade.graphics.drawRect(0, h - 130, w, 130, "#081A32B8");
+      panel.addChildAt(footShade, 1);
     }
     renderUpgrade(panel, progress, options, onStart, onUpgrade) {
       panel.destroyChildren();
       this.refreshView = () => this.show(progress, options, onStart, onUpgrade, true);
       panel.graphics.clear();
-      panel.graphics.drawRect(0, 0, Laya.stage.width, Laya.stage.height, "#081426");
+      panel.graphics.drawRect(0, 0, Laya.stage.width, Laya.stage.height, "#10162F");
+      this.addIllustration(panel);
+      const veil = new Laya.Sprite();
+      veil.mouseEnabled = false;
+      veil.graphics.drawRect(0, 0, Laya.stage.width, Laya.stage.height, "#08152ACC");
+      panel.addChild(veil);
       const width = Laya.stage.width;
       this.addText(
         panel,
@@ -1514,15 +1736,10 @@
     createButton(textValue, width, height, color) {
       const button = new Laya.Sprite();
       button.size(width, height);
-      button.graphics.drawRect(
-        0,
-        0,
-        width,
-        height,
-        color,
-        "#80BDEA",
-        2
-      );
+      button.graphics.drawRect(5, 8, width - 10, height - 8, "#071321");
+      button.graphics.drawRect(0, 0, width, height - 5, "#10243F", "#92D3F5", 3);
+      button.graphics.drawRect(6, 6, width - 12, height - 17, color);
+      button.graphics.drawRect(14, 12, width - 28, 5, "#FFFFFF33");
       button.mouseEnabled = true;
       this.addText(
         button,
@@ -1541,6 +1758,10 @@
       const text = new Laya.Text();
       text.text = textValue;
       text.color = color;
+      if (bold) {
+        text.stroke = 1;
+        text.strokeColor = "#19243B";
+      }
       text.fontSize = fontSize;
       text.bold = bold;
       text.align = align;
@@ -2990,9 +3211,23 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
     constructor(root) {
       this.root = root;
       this.container = null;
+      this.illustratedBackdrop = null;
     }
     show(settlement, progress, options, onUpgrade, onReplay) {
       this.hide();
+      const w = Laya.stage.width, h = Laya.stage.height;
+      const backdrop = this.illustratedBackdrop = new Laya.Sprite();
+      const cover = Math.max(w / 750, h / 1334);
+      backdrop.scale(cover, cover);
+      backdrop.pos((w - 750 * cover) / 2, (h - 1334 * cover) / 2);
+      backdrop.loadImage("art/mars_home.png");
+      backdrop.mouseEnabled = false;
+      this.root.addChild(backdrop);
+      const veil = new Laya.Sprite();
+      veil.graphics.drawRect(0, 0, w / cover, h / cover, "#09142DBB");
+      veil.mouseEnabled = false;
+      veil.pos(-backdrop.x / cover, -backdrop.y / cover);
+      backdrop.addChild(veil);
       const panel = this.container = new Laya.Sprite();
       const width = Math.min(
         620,
@@ -3011,15 +3246,11 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
         Laya.stage.width / 2,
         Laya.stage.height / 2
       );
-      panel.graphics.drawRect(
-        0,
-        0,
-        width,
-        height,
-        "#13233A",
-        "#6EA3D3",
-        4
-      );
+      panel.graphics.drawRect(9, 13, width - 18, height - 3, "#071020AA");
+      panel.graphics.drawRect(0, 0, width, height, "#172942", "#89D6E5", 4);
+      panel.graphics.drawRect(5, 5, width - 10, 187, "#203956");
+      panel.graphics.drawRect(24, 16, width - 48, 5, "#F9CA89");
+      panel.graphics.drawRect(30, 184, width - 60, 2, "#5A88A3");
       this.root.addChild(
         panel
       );
@@ -3110,6 +3341,9 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
       );
     }
     hide() {
+      var _a;
+      (_a = this.illustratedBackdrop) == null ? void 0 : _a.destroy(true);
+      this.illustratedBackdrop = null;
       if (!this.container) {
         return;
       }
@@ -3123,15 +3357,8 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
         28,
         y
       );
-      row.graphics.drawRect(
-        0,
-        0,
-        width,
-        104,
-        "#1B304C",
-        "#365C80",
-        2
-      );
+      row.graphics.drawRect(0, 0, width, 104, "#1A3650", "#4B7F98", 2);
+      row.graphics.drawRect(0, 0, 5, 104, "#72C4D3");
       parent.addChild(row);
       this.addText(
         row,
@@ -3198,15 +3425,10 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
         width,
         height
       );
-      button.graphics.drawRect(
-        0,
-        0,
-        width,
-        height,
-        color,
-        "#8CC7F0",
-        2
-      );
+      button.graphics.drawRect(4, 5, width - 8, height - 5, "#071629");
+      button.graphics.drawRect(0, 0, width, height - 4, "#183852", "#9EDCEE", 2);
+      button.graphics.drawRect(4, 4, width - 8, height - 12, color);
+      button.graphics.drawRect(10, 8, width - 20, 3, "#FFFFFF44");
       button.mouseEnabled = true;
       this.addText(
         button,
@@ -3302,6 +3524,7 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
     constructor() {
       this.elapsedAccumulatorMs = 0;
       this.suspended = false;
+      this.userPaused = false;
       this.skipResumeDelta = false;
       this.unbindVisibility = null;
       this.structureStableMs = 0;
@@ -3382,6 +3605,7 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
       const debug = new URLSearchParams(((_a = globalThis.location) == null ? void 0 : _a.search) || "").get("debug") === "1";
       this.performance = new PerformanceMonitor(this.root, debug);
       this.world.addChild(this.buildGuide);
+      this.pauseUI = new PauseOverlay(this.root, (value) => this.setUserPaused(value));
       this.bindInput();
       this.unbindVisibility = PlatformManager.current.onVisibilityChange((visible) => {
         var _a2, _b;
@@ -3519,6 +3743,26 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
       this.platformCollider.destroy();
       this.platformCollider = null;
     }
+    setUserPaused(value) {
+      var _a, _b;
+      if (this.userPaused === value) return;
+      this.userPaused = value;
+      this.elapsedAccumulatorMs = 0;
+      this.skipResumeDelta = true;
+      this.pointerHeld = false;
+      this.buildDragging = false;
+      this.controlDragging = false;
+      this.lastControlInput = 0;
+      (_a = this.flight) == null ? void 0 : _a.setInput(0);
+      (_b = this.astronaut) == null ? void 0 : _b.setInput(0);
+      this.pauseUI.setPaused(value);
+      if (value) GameAudio.suspend();
+      else GameAudio.unlock();
+    }
+    pointerOnPauseButton() {
+      var _a;
+      return !!((_a = this.pauseUI) == null ? void 0 : _a.isActive) && !this.userPaused && Laya.stage.mouseY <= 85 && Laya.stage.mouseX >= Laya.stage.width - 155;
+    }
     bindInput() {
       Laya.stage.on(
         Laya.Event.MOUSE_DOWN,
@@ -3547,6 +3791,7 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
       );
     }
     onPointerDown() {
+      if (this.userPaused || this.pointerOnPauseButton()) return;
       GameAudio.unlock();
       this.pointerHeld = true;
       this.lastControlInput = 0;
@@ -3568,6 +3813,7 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
       }
     }
     onPointerMove() {
+      if (this.userPaused || this.pointerOnPauseButton()) return;
       if (this.buildDragging) {
         this.moveCurrentToPointer();
         return;
@@ -3600,6 +3846,7 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
     }
     onPointerUp() {
       var _a, _b;
+      if (this.userPaused) return;
       this.pointerHeld = false;
       this.lastControlInput = 0;
       if (this.buildDragging && this.current && !this.current.released) {
@@ -3632,9 +3879,11 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
       );
     }
     update() {
-      var _a;
+      var _a, _b;
       const delta = Math.min(2e3, Math.max(0, Laya.timer.delta || 16.67));
       let steps = 0;
+      (_a = this.pauseUI) == null ? void 0 : _a.setActive(!this.isIdlePhase() && !this.suspended);
+      if (this.userPaused) return;
       if (!this.suspended && !this.isIdlePhase()) {
         if (this.skipResumeDelta) this.skipResumeDelta = false;
         else {
@@ -3654,7 +3903,7 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
       }
       if (!this.suspended && this.performance.enabled) this.performance.record(delta, steps, {
         worldNodes: this.world.numChildren,
-        bodies: ((_a = Laya.Physics2D.I._rigiBodyList) == null ? void 0 : _a.length) || 0,
+        bodies: ((_b = Laya.Physics2D.I._rigiBodyList) == null ? void 0 : _b.length) || 0,
         obstacles: this.obstacleManager.activeCount,
         pickups: this.pickupManager.activeCount,
         phase: this.phase
@@ -3703,6 +3952,7 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
       }
     }
     updateRunAltitude(dt) {
+      var _a;
       if (!this.runStats) {
         return;
       }
@@ -3727,6 +3977,7 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
       if (milestone > this.milestone) {
         this.milestone = milestone;
         this.hud.showMilestone(milestone * GameConfig.milestoneStepMeters);
+        (_a = this.feedback) == null ? void 0 : _a.burst(Laya.stage.width / 2, 350, "#FFD58A", "major");
         GameAudio.play("record");
       }
       this.hudElapsedMs += dt;
@@ -3987,10 +4238,12 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
       );
     }
     onStageSeparation() {
-      var _a;
+      var _a, _b, _c;
       this.phase = "stage_separation" /* StageSeparation */;
       GameAudio.play("separate");
-      (_a = this.flight) == null ? void 0 : _a.setInput(0);
+      const joint = (_a = this.modules[2]) == null ? void 0 : _a.node;
+      if (joint) (_b = this.feedback) == null ? void 0 : _b.burst(joint.x, joint.y, "#9BDDF8", "major");
+      (_c = this.flight) == null ? void 0 : _c.setInput(0);
       this.obstacleManager.setMode(null);
       this.pickupManager.setMode(null);
       this.routes.setMode(null);
@@ -4001,8 +4254,11 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
       PlatformManager.current.vibrate("heavy");
     }
     onStage2Ignition() {
+      var _a, _b;
       this.phase = "stage2_flight" /* Stage2Flight */;
       GameAudio.play("ignite");
+      const thruster = (_a = this.modules[2]) == null ? void 0 : _a.node;
+      if (thruster) (_b = this.feedback) == null ? void 0 : _b.burst(thruster.x, thruster.y, "#FFCE84", "major");
       this.buildMetrics = this.assembly.calculateMetrics(this.modules[2].node.x);
       this.resumeHeldControl();
       this.hud.setStage2Ignition(
@@ -4015,6 +4271,7 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
       PlatformManager.current.vibrate("medium");
     }
     onObstacleHit(hit) {
+      var _a;
       if (hit.target === "rocket") {
         return this.onRocketObstacleHit(hit.targetNodeName);
       }
@@ -4025,6 +4282,7 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
           GameConfig.astronautObstacleEnergyDamage
         );
         GameAudio.play("hit");
+        (_a = this.feedback) == null ? void 0 : _a.burst(this.astronaut.node.x, this.astronaut.node.y, "#FFA2A2", "major");
         this.hud.setAstronautDamaged();
         PlatformManager.current.vibrate("medium");
         return true;
@@ -4032,6 +4290,7 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
       return false;
     }
     onRocketObstacleHit(targetNodeName) {
+      var _a, _b;
       if (!this.isRocketControlPhase() || !this.assembly || !this.flight) {
         return false;
       }
@@ -4049,6 +4308,8 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
         this.rocketHp - 1
       );
       GameAudio.play("hit");
+      const impactNode = (_a = this.modules.find((m) => m.node.name === targetNodeName)) == null ? void 0 : _a.node;
+      if (impactNode) (_b = this.feedback) == null ? void 0 : _b.burst(impactNode.x, impactNode.y, "#FF9C88", "major");
       this.hud.setRocketDamaged(
         this.rocketHp,
         GameConfig.rocketMaxHp
@@ -4208,6 +4469,7 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
     onUpgrade(key) {
       if (this.progressStore.tryUpgrade(key)) {
         PlatformManager.current.vibrate("medium");
+        GameAudio.play("upgrade");
         this.showResultPanel();
       } else {
         PlatformManager.current.vibrate("light");
@@ -4340,6 +4602,7 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
     }
     onHomeUpgrade(key) {
       if (this.progressStore.tryUpgrade(key)) {
+        GameAudio.play("upgrade");
         PlatformManager.current.vibrate("medium");
       } else {
         PlatformManager.current.vibrate("light");
@@ -4486,6 +4749,7 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
       );
     }
     onResize() {
+      var _a;
       if (!this.hud) return;
       this.drawBackground();
       this.backdrop.resize();
@@ -4504,6 +4768,7 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
         }
       }
       this.hud.layout();
+      (_a = this.pauseUI) == null ? void 0 : _a.layout();
       if (this.phase === "result" /* Result */) this.showResultPanel();
       if (this.actionButton) {
         this.actionButton.x = Laya.stage.width / 2;
@@ -4520,9 +4785,21 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
   });
   function main() {
     return __async(this, null, function* () {
+      var _a;
       Laya.stage.bgColor = "#081426";
-      Laya.stage.scaleMode = Laya.Stage.SCALE_FIXED_AUTO;
-      Laya.stage.screenMode = Laya.Stage.SCREEN_VERTICAL;
+      const isTouchMiniGame = !!globalThis.wx || !!globalThis.tt;
+      const mobileUA = /Android|iPhone|iPad|iPod|Mobile/i.test(((_a = globalThis.navigator) == null ? void 0 : _a.userAgent) || "");
+      let lastLayout = "";
+      const syncOrientation = () => {
+        const desktopLandscape = !isTouchMiniGame && !mobileUA && globalThis.innerWidth > globalThis.innerHeight;
+        const layout = desktopLandscape ? "desktop" : "portrait";
+        if (layout === lastLayout) return;
+        lastLayout = layout;
+        Laya.stage.screenMode = desktopLandscape ? Laya.Stage.SCREEN_NONE : Laya.Stage.SCREEN_VERTICAL;
+        Laya.stage.scaleMode = desktopLandscape ? Laya.Stage.SCALE_SHOWALL : Laya.Stage.SCALE_FIXED_AUTO;
+      };
+      syncOrientation();
+      Laya.stage.on(Laya.Event.RESIZE, null, syncOrientation);
       Laya.stage.alignH = Laya.Stage.ALIGN_CENTER;
       Laya.stage.alignV = Laya.Stage.ALIGN_MIDDLE;
       yield Laya.Physics2D.I.enable();

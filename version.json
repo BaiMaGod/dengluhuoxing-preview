@@ -1,6 +1,7 @@
 {
   "sourceRepository": "BaiMaGod/dengluhuoxing",
-  "sourceCommit": "c6a7ae6c30cfa9a52adc3f8ae50a2549d27c7562",
-  "sourceWorkflowRun": 37604907935,
-  "engine": "LayaAir 3.4.0"
+  "sourceCommit": "b4ca19d63ff7b55b690cf976b6e05785d4b91aa6",
+  "sourceWorkflowRun": 37742665144,
+  "engine": "LayaAir 3.4.0",
+  "flightArtPatched": true
 }
