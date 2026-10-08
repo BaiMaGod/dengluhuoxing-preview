@@ -19,6 +19,7 @@ jobs:
           set -euo pipefail
           test -s index.html
           test -s js/bundle.js
+          node --check js/bundle.js
           python3 - <<'PY'
           import json
           v=json.load(open("version.json"))
@@ -120,6 +121,13 @@ jobs:
               console.log("Home layout has no overlapping text or buttons",view);
             };
             await verifyLayout("phone");
+            const visualHome=await page.evaluate(()=>{
+              const nodes=new Set();
+              const visit=(n)=>{if(n.name)nodes.add(n.name);for(let i=0;i<n.numChildren;i++)visit(n.getChildAt(i));};
+              visit(Laya.stage);
+              return {mascot:nodes.has("home_astronaut_mascot"),record:nodes.has("home_stats_backdrop")};
+            });
+            assert.deepEqual(visualHome,{mascot:true,record:true},"Latest mascot and record artwork are required in real runtime");
             await page.screenshot({path:"live-home.png"});
             await page.setViewportSize({width:1280,height:800});
             await page.waitForFunction(()=>globalThis.Laya.stage.screenMode===Laya.Stage.SCREEN_NONE);
@@ -134,6 +142,14 @@ jobs:
               function find(n){if(n.text?.startsWith("一级发动机"))return true;for(let i=0;i<n.numChildren;i++)if(find(n.getChildAt(i)))return true;return false;}
               return find(Laya.stage);
             });
+            const feedbackPlate=await page.evaluate(()=>{
+              let found=false;
+              function scan(n){if(n.name==="mission_feedback_plate")found=true;
+                for(let i=0;i<n.numChildren;i++)scan(n.getChildAt(i));}
+              scan(Laya.stage);
+              return found;
+            });
+            assert.ok(feedbackPlate,"The new HUD event plaque must exist in the running game");
             await page.screenshot({path:"live-game.png"});
             assert.deepEqual(errors,[]);
             console.log("Live preview loaded and entered rocket construction",url,version.sourceCommit);
