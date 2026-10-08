@@ -1,0 +1,51 @@
+name: Import verified Laya Web build once
+on:
+  push:
+    paths: [".github/workflows/import-artifact-once.yml"]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch compiled official Web build
+        env:
+          ARTIFACT_URL: "https://sdmntprsouthcentralus.oaiusercontent.com/files/00000000-dd44-81f7-8ff3-310043903c28/raw?se=2026-10-08T07%3A59%3A54Z&sp=r&sv=2026-02-06&sr=b&scid=6215f189-39ef-5674-a276-797d65c81ae0&skoid=78501c7f-f65d-4e8d-9110-bed29e1beb41&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-10-07T23%3A49%3A59Z&ske=2026-10-08T23%3A49%3A59Z&sks=b&skv=2026-02-06&sig=IhmWPY2SkMZbDMQAit3N5joGfsCjv3FDP1qvmmK4pNc%3D"
+        run: |
+          set -euo pipefail
+          curl --retry 2 --connect-timeout 15 --max-time 75 -fsSL "$ARTIFACT_URL" -o /tmp/mars.zip
+          unzip -tq /tmp/mars.zip
+          mkdir -p /tmp/mars-release
+          unzip -oq /tmp/mars.zip -d /tmp/mars-release
+          test -s /tmp/mars-release/build/web/index.html
+          test -s /tmp/mars-release/build/web/js/bundle.js
+          test -s art/mars_flight.png
+          cp -a /tmp/mars-release/build/web/. .
+          test -s art/mars_home.png
+          test -s art/mars_flight.png
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path("version.json")
+          p.write_text(json.dumps({
+            "sourceRepository":"BaiMaGod/dengluhuoxing",
+            "sourceCommit":"b4ca19d63ff7b55b690cf976b6e05785d4b91aa6",
+            "sourceWorkflowRun":37742665144,
+            "engine":"LayaAir 3.4.0",
+            "flightArtPatched":True
+          },ensure_ascii=False,indent=2)+"\n")
+          PY
+          touch .nojekyll
+      - name: Commit Web-only files and remove one-shot download
+        run: |
+          set -euo pipefail
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config user.name 'github-actions[bot]'
+          git rm -f .github/workflows/import-artifact-once.yml
+          git add index.html js libs art fileconfig.json version.json .nojekyll
+          git commit -m 'deploy: publish newer Mars quality-upgrade Web build with verified artwork'
+          git pull --rebase origin main
+          git push origin HEAD:main
