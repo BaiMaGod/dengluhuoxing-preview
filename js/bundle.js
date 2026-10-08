@@ -475,6 +475,7 @@
       node.pos(x,y);
       node.scale(0.32,0.32);
       node.alpha=0.9;
+      node.visible=true;
       node.mouseEnabled=false;
       this.root.addChild(node);
       this.shockwaves.push({node,age:0,lifetime:560});
