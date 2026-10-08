@@ -6,5 +6,12 @@
   "flightArtPatched": true,
   "artAssets": 13,
   "artSourceCommit": "cf22d51394800216c4506595f9d77bd866f7e958",
-  "artIntegration": "compiled Web visual-only patch; unchanged gameplay and Box2D logic"
+  "artIntegration": "compiled Web visual-only patch; unchanged gameplay and Box2D logic",
+  "visualPatchCommits": [
+    "52da81faee09841982854d45655097f7254ed45f",
+    "ea27268b8bce9487a4edcab2c46e57230b434d8b",
+    "01aa5625551889ad787e44509edd72f50bb974da"
+  ],
+  "visualOnly": true,
+  "previewNote": "Hand-synchronized compiled visual patch; original core gameplay bundle unchanged; official LayaAir CI pending runner availability"
 }
