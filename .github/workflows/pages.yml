@@ -65,7 +65,16 @@ jobs:
           try {
             await page.goto(url,{waitUntil:"domcontentloaded"});
             await page.waitForFunction(()=>globalThis.Laya?.stage?.numChildren>0);
-            await page.waitForTimeout(1500);
+            await page.waitForTimeout(600);
+            const expectedArt=["stage1_engine","stage1_tank","stage2_engine","stage2_tank","escape","cockpit","astronaut","asteroid","fuel","metal","chip","suit_energy","hud_panel"];
+            await page.waitForFunction((names)=>names.every(n=>!!globalThis.Laya?.loader?.getRes("art/kit/"+n+".png")),expectedArt,{timeout:20000});
+            for (const name of expectedArt) {
+              const response=await page.request.get(new URL("art/kit/"+name+".png",url));
+              assert.equal(response.status(),200,"Missing published art "+name);
+              assert.ok((await response.body()).byteLength>5000,"Unexpected tiny art "+name);
+            }
+            console.log("Loaded",expectedArt.length,"new PNG textures into Laya cache");
+            await page.waitForTimeout(300);
             const p=await page.evaluate(()=>{
               function find(n){if(n.text==="开始造火箭"&&n.visible){const p=n.localToGlobal(new Laya.Point(n.width/2,n.height/2));return{x:p.x,y:p.y};}
                 for(let i=0;i<n.numChildren;i++){const p=find(n.getChildAt(i));if(p)return p;}}
@@ -89,5 +98,6 @@ jobs:
           name: live-preview-check
           path: |
             live-home.png
+            live-home-desktop.png
             live-game.png
           if-no-files-found: ignore
