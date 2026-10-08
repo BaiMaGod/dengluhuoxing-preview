@@ -1541,10 +1541,10 @@
       this.addText(panel, "亲手搭火箭 · 穿越星空 · 挑战新高度", 30, 190, width - 60, 45, 26, "#C4E3F6", false);
       const target = (Math.floor(progress.bestAltitudeMeters / 500) + 1) * 500;
       this.addText(panel, `下一目标  ${this.formatAltitude(target)}`, 0, 257, width, 50, 31, "#FFD999", true);
-      let y = 330;
+      let y = 307;
       for (const definition of [...GameConfig.modules].reverse()) {
         const module = new Laya.Sprite();
-        const w = definition.width * 0.52, h = definition.height * 0.52;
+        const w = definition.width * 0.60, h = definition.height * 0.60;
         GameplayArt.module(module.graphics, definition.kind, w, h);
         module.pos((width - w) / 2, y);
         panel.addChild(module);
@@ -1555,8 +1555,8 @@
       flame.graphics.drawPoly(0, 0, [-7, 0, 0, 43, 7, 0], "#FFE3A5");
       flame.pos(width / 2, y);
       panel.addChild(flame);
-      this.addText(panel, `历史最高  ${this.formatAltitude(progress.bestAltitudeMeters)}`, 0, 832, width, 48, 33, "#FFE6A9", true);
-      this.addText(panel, `火星币 ${progress.marsCoins}  ·  金属 ${progress.metal}  ·  芯片 ${progress.chips}`, 20, 887, width - 40, 42, 26, "#ADE6DF", false);
+      this.addText(panel, `历史最高  ${this.formatAltitude(progress.bestAltitudeMeters)}`, 0, 840, width, 48, 33, "#FFE6A9", true);
+      this.addText(panel, `火星币 ${progress.marsCoins}  ·  金属 ${progress.metal}  ·  芯片 ${progress.chips}`, 20, 897, width - 40, 42, 26, "#ADE6DF", false);
       const start = this.createButton("开始造火箭", 440, 96, "#2588C3");
       start.pos((width - 440) / 2, 976);
       start.once(Laya.Event.CLICK, this, onStart);
