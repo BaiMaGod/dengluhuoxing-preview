@@ -1826,6 +1826,8 @@
       this.speed = speed;
       this.onHit = onHit;
       this.consumed = false;
+      this.art = new Laya.Sprite();
+      this.cosmeticMs = 0;
       const node = this.node = new Laya.Sprite();
       node.name = "flight_obstacle";
       node.size(
@@ -1837,7 +1839,11 @@
         GameConfig.obstacleHeight / 2
       );
       node.pos(x, y);
-      GameplayArt.obstacle(node.graphics, GameConfig.obstacleWidth, GameConfig.obstacleHeight);
+      this.art.size(GameConfig.obstacleWidth, GameConfig.obstacleHeight);
+      this.art.pivot(GameConfig.obstacleWidth / 2, GameConfig.obstacleHeight / 2);
+      this.art.pos(GameConfig.obstacleWidth / 2, GameConfig.obstacleHeight / 2);
+      GameplayArt.obstacle(this.art.graphics, GameConfig.obstacleWidth, GameConfig.obstacleHeight);
+      node.addChild(this.art);
       const body = node.addComponent(
         Laya.RigidBody
       );
@@ -1858,6 +1864,8 @@
     }
     update(deltaMs) {
       this.node.y += this.speed * (deltaMs / 1e3);
+      this.cosmeticMs = (this.cosmeticMs + deltaMs) % 12000;
+      this.art.rotation = 4 * Math.sin(this.cosmeticMs * 0.0012);
     }
     destroy() {
       this.node.off(
@@ -2016,6 +2024,8 @@
       this.speed = speed;
       this.onHit = onHit;
       this.consumed = false;
+      this.art = new Laya.Sprite();
+      this.cosmeticMs = 0;
       const node = this.node = new Laya.Sprite();
       node.name = `flight_pickup_${type}`;
       node.size(
@@ -2027,7 +2037,11 @@
         GameConfig.pickupSize / 2
       );
       node.pos(x, y);
-      GameplayArt.pickup(node.graphics, type, GameConfig.pickupSize);
+      this.art.size(GameConfig.pickupSize, GameConfig.pickupSize);
+      this.art.pivot(GameConfig.pickupSize / 2, GameConfig.pickupSize / 2);
+      this.art.pos(GameConfig.pickupSize / 2, GameConfig.pickupSize / 2);
+      GameplayArt.pickup(this.art.graphics, type, GameConfig.pickupSize);
+      node.addChild(this.art);
       const body = node.addComponent(
         Laya.RigidBody
       );
@@ -2051,6 +2065,9 @@
     }
     update(deltaMs) {
       this.node.y += this.speed * deltaMs / 1e3;
+      this.cosmeticMs = (this.cosmeticMs + deltaMs) % 6283;
+      const pulse = 1 + 0.055 * Math.sin(this.cosmeticMs * 0.006);
+      this.art.scale(pulse, pulse);
     }
     destroy() {
       this.node.off(
