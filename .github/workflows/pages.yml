@@ -82,6 +82,13 @@ jobs:
             });
             assert.ok(p,"Live home screen has the start button");
             await page.screenshot({path:"live-home.png"});
+            await page.setViewportSize({width:1280,height:800});
+            await page.waitForFunction(()=>globalThis.Laya.stage.screenMode===Laya.Stage.SCREEN_NONE);
+            await page.waitForTimeout(350);
+            await page.screenshot({path:"live-home-desktop.png"});
+            await page.setViewportSize({width:390,height:844});
+            await page.waitForFunction(()=>globalThis.Laya.stage.screenMode===Laya.Stage.SCREEN_VERTICAL);
+            await page.waitForTimeout(250);
             await page.mouse.click(p.x,p.y);
             await page.waitForFunction(()=>{
               function find(n){if(n.text?.startsWith("一级发动机"))return true;for(let i=0;i<n.numChildren;i++)if(find(n.getChildAt(i)))return true;return false;}
