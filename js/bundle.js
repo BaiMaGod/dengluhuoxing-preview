@@ -1570,7 +1570,7 @@
       });
       panel.addChild(upgrade);
       const audio = this.createButton(GameAudio.isMuted ? "音效：关" : "音效：开", 180, 54, "#24415D");
-      audio.pos((width - 180) / 2, 1201);
+      audio.pos((width - 180) / 2, 1150);
       audio.on(Laya.Event.CLICK, this, () => {
         GameAudio.toggle();
         this.renderMain(panel, progress, options, onStart, onUpgrade);
