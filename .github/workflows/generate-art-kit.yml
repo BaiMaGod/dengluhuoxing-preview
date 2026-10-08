@@ -4,6 +4,7 @@ on:
     branches: ["art/mars-sprite-render-20261008"]
     paths:
       - "tooling/build_artkit.py"
+      - ".github/workflows/generate-art-kit.yml"
   workflow_dispatch:
 permissions:
   contents: write
@@ -21,7 +22,7 @@ jobs:
           from pathlib import Path
           from PIL import Image
           folder=Path("assets/art/kit")
-          sprites=list(folder.glob("*.png"))
+          sprites=[p for p in folder.glob("*.png") if not p.name.startswith("review_")]
           assert len(sprites)>=13
           for item in sprites:
               image=Image.open(item)
@@ -34,7 +35,8 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/art/kit/
+          git add assets/art/kit/*.svg assets/art/kit/*.png assets/art/kit/*.meta
+          git reset -- assets/art/kit/review_contact_sheet.png || true
           if git diff --cached --quiet; then exit 0; fi
           git commit -m "art: add 13 transparent Mars mission sprites and vector sources"
           for attempt in 1 2 3 4 5; do
