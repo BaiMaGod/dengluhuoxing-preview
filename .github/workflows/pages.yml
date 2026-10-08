@@ -151,6 +151,62 @@ jobs:
             });
             assert.ok(feedbackPlate,"The new HUD event plaque must exist in the running game");
             await page.screenshot({path:"live-game.png"});
+            // Real tap-based six-piece rocket assembly, with no game-state shortcuts.
+            const stagePoint=async x=>{
+              const wh=await page.evaluate(()=>({w:Laya.stage.width,h:Laya.stage.height}));
+              return {x:x/wh.w*390,y:x/wh.h*844};
+            };
+            for(let index=0;index<6;index++){
+              await page.waitForFunction(i=>{
+                let matched=false;
+                function find(n){if(n.name?.startsWith("rocket_module_"+i+"_"))matched=true;
+                  for(let j=0;j<n.numChildren;j++)find(n.getChildAt(j));}
+                find(Laya.stage);
+                return matched;
+              },index,{timeout:24000});
+              const p=await page.evaluate(i=>{
+                let point=null;
+                function find(n){if(n.name?.startsWith("rocket_module_"+i+"_")){
+                    point={x:n.x,y:n.y};}
+                  for(let j=0;j<n.numChildren;j++)find(n.getChildAt(j));}
+                find(Laya.stage);
+                return {x:point?.x/Laya.stage.width*390,y:point?.y/Laya.stage.height*844};
+              },index);
+              assert.ok(Number.isFinite(p.x)&&Number.isFinite(p.y),"Rocket module "+index+" has stage coordinates");
+              await page.mouse.move(p.x,p.y);
+              await page.mouse.down();
+              await page.waitForTimeout(60);
+              await page.mouse.up();
+            }
+            const findVisibleLabel=(label)=>page.evaluate(label=>{
+              let point=null;
+              function scan(n){
+                if(n.text===label&&n.visible){
+                  const p=n.localToGlobal(new Laya.Point(n.width/2,n.height/2));
+                  point={x:p.x/Laya.stage.width*390,y:p.y/Laya.stage.height*844};return;
+                }
+                for(let j=0;j<n.numChildren && !point;j++)scan(n.getChildAt(j));
+              }
+              scan(Laya.stage);return point;
+            },label);
+            await page.waitForFunction(()=>{
+              let found=false;
+              function scan(n){if(n.text==="点火发射"&&n.visible)found=true;
+                for(let j=0;j<n.numChildren;j++)scan(n.getChildAt(j));}
+              scan(Laya.stage);return found;
+            },null,{timeout:25000});
+            await page.screenshot({path:"live-build-ready.png"});
+            const fire=await findVisibleLabel("点火发射");
+            assert.ok(fire);
+            await page.mouse.click(fire.x,fire.y);
+            await page.waitForFunction(()=>{
+              let found=false;
+              function scan(n){if(n.text==="点火成功！"&&n.visible)found=true;
+                for(let j=0;j<n.numChildren;j++)scan(n.getChildAt(j));}
+              scan(Laya.stage);return found;
+            },null,{timeout:5000});
+            await page.waitForTimeout(600);
+            await page.screenshot({path:"live-ignition.png"});
             assert.deepEqual(errors,[]);
             console.log("Live preview loaded and entered rocket construction",url,version.sourceCommit);
           } finally {await browser.close();}
@@ -163,4 +219,6 @@ jobs:
             live-home.png
             live-home-desktop.png
             live-game.png
+            live-build-ready.png
+            live-ignition.png
           if-no-files-found: ignore
