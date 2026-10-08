@@ -27,7 +27,7 @@ jobs:
           python3 - <<'PY'
           import json
           v=json.load(open("version.json"))
-          assert v["sourceRepository"] == "BaiMaGod/dengluhuoxing" and len(v["sourceCommit"]) == 40
+          assert v["sourceRepository"] == "BaiMaGod/dengluhuoxing" and v["sourceCommit"] == "b4ca19d63ff7b55b690cf976b6e05785d4b91aa6"
           print("Publishing verified main",v["sourceCommit"])
           PY
       - name: Configure Pages
@@ -54,7 +54,7 @@ jobs:
           import {chromium} from "playwright-core";
           const url=process.env.PREVIEW_URL;
           const version=await fetch(new URL("version.json",url),{cache:"no-store"}).then(r=>r.json());
-          assert.match(version.sourceCommit,/^[0-9a-f]{40}$/);
+          assert.equal(version.sourceCommit,"b4ca19d63ff7b55b690cf976b6e05785d4b91aa6");
           const browser=await chromium.launch({executablePath:process.env.CHROME_BIN,headless:true,args:["--no-sandbox","--disable-dev-shm-usage"]});
           const page=await browser.newPage({viewport:{width:390,height:844}});
           const errors=[];
