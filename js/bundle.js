@@ -4306,6 +4306,11 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
       this.phase = "launching" /* Launching */;
       GameAudio.play("ignite");
       this.buildGuide.visible = false;
+      const ignitionNode = this.modules[0] && this.modules[0].node;
+      if (ignitionNode) {
+        this.feedback.ring(ignitionNode.x,ignitionNode.y,"#FFBD6B");
+        this.feedback.show(Laya.stage.width / 2,475,"点火成功！","#FFE2A3","major");
+      }
       this.destroyActionButton();
       this.rocketHp = GameConfig.rocketMaxHp;
       this.damageCooldownMs = 0;
@@ -4380,7 +4385,10 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
       this.phase = "stage_separation" /* StageSeparation */;
       GameAudio.play("separate");
       const joint = (_a = this.modules[2]) == null ? void 0 : _a.node;
-      if (joint) (_b = this.feedback) == null ? void 0 : _b.burst(joint.x, joint.y, "#9BDDF8", "major");
+      if (joint) {
+        this.feedback.ring(joint.x,joint.y,"#8EDAFF");
+        this.feedback.show(Laya.stage.width/2,460,"一级分离！","#D0F3FF","major");
+      }
       (_c = this.flight) == null ? void 0 : _c.setInput(0);
       this.obstacleManager.setMode(null);
       this.pickupManager.setMode(null);
@@ -4396,7 +4404,10 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
       this.phase = "stage2_flight" /* Stage2Flight */;
       GameAudio.play("ignite");
       const thruster = (_a = this.modules[2]) == null ? void 0 : _a.node;
-      if (thruster) (_b = this.feedback) == null ? void 0 : _b.burst(thruster.x, thruster.y, "#FFCE84", "major");
+      if (thruster) {
+        this.feedback.ring(thruster.x,thruster.y,"#FFC36F");
+        this.feedback.show(Laya.stage.width/2,470,"二级点火！","#FFE4B0","major");
+      }
       this.buildMetrics = this.assembly.calculateMetrics(this.modules[2].node.x);
       this.resumeHeldControl();
       this.hud.setStage2Ignition(
@@ -4511,6 +4522,8 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
       this.pickupManager.setMode(null);
       this.routes.setMode(null);
       const spawn = this.assembly.getEscapeSpawnPoint();
+      this.feedback.ring(spawn.x,spawn.y,"#B9EFFF");
+      this.feedback.show(Laya.stage.width/2,465,"紧急弹射！","#CBF6FF","major");
       const drift = (_c = (_b = this.buildMetrics) == null ? void 0 : _b.drift) != null ? _c : 0;
       this.assembly.releaseActiveAsWreck(
         motion.horizontalVelocity,
@@ -4555,6 +4568,7 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
         }
       );
       this.astronaut.start();
+      this.feedback.ring(this.astronaut.node.x,this.astronaut.node.y,"#79D9FF");
       this.resumeHeldControl();
       this.obstacleManager.setMode("astronaut");
       this.pickupManager.setMode("astronaut");
