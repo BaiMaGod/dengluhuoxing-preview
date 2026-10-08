@@ -83,10 +83,48 @@ jobs:
               const p=find(Laya.stage);return p&&{x:p.x/Laya.stage.width*390,y:p.y/Laya.stage.height*844};
             });
             assert.ok(p,"Live home screen has the start button");
+            const verifyLayout=async (view) => {
+              const rects=await page.evaluate(()=>{
+                const root=(()=>{
+                  function find(n){if(n.name==="home_panel")return n;for(let i=0;i<n.numChildren;i++){const found=find(n.getChildAt(i));if(found)return found;}}
+                  return find(Laya.stage);
+                })();
+                if(!root)return [];
+                const tests=[
+                  text=>text.startsWith("历史最高"),
+                  text=>text.startsWith("火星币"),
+                  text=>text==="开始造火箭",
+                  text=>text==="升级"||text.startsWith("升级  ·"),
+                  text=>text.startsWith("音效："),
+                  text=>text.startsWith("搭稳")
+                ];
+                const rects=[];
+                function scan(node){
+                  if(node instanceof Laya.Text && node.visible){
+                    const index=tests.findIndex((test,i)=>!rects[i]&&test(node.text||""));
+                    if(index>=0){
+                      const point=node.localToGlobal(new Laya.Point(0,0));
+                      rects[index]={top:point.y,bottom:point.y+node.height,text:node.text};
+                    }
+                  }
+                  for(let i=0;i<node.numChildren;i++)scan(node.getChildAt(i));
+                }
+                scan(root);
+                return rects;
+              });
+              assert.equal(rects.length,6,"All six home HUD/controls must be visible: "+view);
+              for(let i=0;i<rects.length-1;i++){
+                assert.ok(rects[i].bottom+4<=rects[i+1].top,
+                  "Home elements overlap in "+view+": "+rects[i].text+" / "+rects[i+1].text);
+              }
+              console.log("Home layout has no overlapping text or buttons",view);
+            };
+            await verifyLayout("phone");
             await page.screenshot({path:"live-home.png"});
             await page.setViewportSize({width:1280,height:800});
             await page.waitForFunction(()=>globalThis.Laya.stage.screenMode===Laya.Stage.SCREEN_NONE);
             await page.waitForTimeout(350);
+            await verifyLayout("desktop");
             await page.screenshot({path:"live-home-desktop.png"});
             await page.setViewportSize({width:390,height:844});
             await page.waitForFunction(()=>globalThis.Laya.stage.screenMode===Laya.Stage.SCREEN_VERTICAL);
