@@ -3,5 +3,8 @@
   "sourceCommit": "b4ca19d63ff7b55b690cf976b6e05785d4b91aa6",
   "sourceWorkflowRun": 37742665144,
   "engine": "LayaAir 3.4.0",
-  "flightArtPatched": true
+  "flightArtPatched": true,
+  "artAssets": 13,
+  "artSourceCommit": "cf22d51394800216c4506595f9d77bd866f7e958",
+  "artIntegration": "compiled Web visual-only patch; unchanged gameplay and Box2D logic"
 }
