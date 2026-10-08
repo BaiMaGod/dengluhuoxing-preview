@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="172" height="132" viewBox="0 0 172 132"><defs>
+  <linearGradient id="metal" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#496481"/><stop offset=".1" stop-color="#D5E4F2"/><stop offset=".25" stop-color="#FAFFFF"/><stop offset=".52" stop-color="#ABC0D6"/><stop offset=".7" stop-color="#D5E4F2"/><stop offset=".93" stop-color="#7796B5"/><stop offset="1" stop-color="#304D72"/></linearGradient>
+  <linearGradient id="tint" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FCE0B2"/><stop offset=".25" stop-color="#E8AC8A"/><stop offset=".7" stop-color="#E8AC8A"/><stop offset="1" stop-color="#273F65"/></linearGradient>
+  <linearGradient id="navy" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#1F466B"/><stop offset=".5" stop-color="#071D37"/><stop offset="1" stop-color="#366484"/></linearGradient>
+  <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#D5FAFF"/><stop offset=".16" stop-color="#75DAF6"/><stop offset=".48" stop-color="#2D82BE"/><stop offset=".8" stop-color="#0E416F"/><stop offset="1" stop-color="#061C3C"/></linearGradient>
+  <linearGradient id="flare" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#FFFAD7"/><stop offset=".25" stop-color="#FFC77C"/><stop offset=".7" stop-color="#F98147"/><stop offset="1" stop-color="#9D3D56"/></linearGradient>
+  <linearGradient id="halo"><stop stop-color="#B8F6FF" stop-opacity=".8"/><stop offset="1" stop-color="#74D9F7" stop-opacity="0"/></linearGradient>
+  <radialGradient id="aura"><stop stop-color="#E8AC8A" stop-opacity=".7"/><stop offset="1" stop-color="#E8AC8A" stop-opacity="0"/></radialGradient>
+  </defs><path d="M8 45L42 12L92 7L132 18L166 62L145 111L93 128L47 115L9 83Z" fill="#252A49" stroke="#A28D91" stroke-width="6"/>
+<path d="M9 46L43 14L88 9L105 47L74 63L34 67Z" fill="#B6A19B"/>
+<path d="M89 9L130 20L164 63L123 81L108 48Z" fill="#6D637A"/>
+<path d="M34 69L73 63L110 47L124 83L93 126L47 112L12 84Z" fill="#61546A"/>
+<path d="M124 82L162 63L145 108L95 124Z" fill="#413D5C"/>
+<path d="M30 44L43 31L58 39L55 58L37 60Z" fill="#544B63" stroke="#D0B9AA" stroke-opacity=".55" stroke-width="3"/>
+<path d="M83 76L105 69L120 86L106 103L88 103L76 91Z" fill="#413F5D" stroke="#B99E9E" stroke-width="3"/>
+<path d="M132 43L143 58L131 68L118 61Z" fill="#36334E" stroke="#B5A3A9" stroke-width="2"/>
+<path d="M46 106L61 99L70 108" fill="none" stroke="#D4A59D" stroke-width="5" stroke-linecap="round" opacity=".75"/>
+<path d="M48 18L88 12L118 26" fill="none" stroke="#EFD0B5" stroke-width="5" opacity=".55"/></svg>
