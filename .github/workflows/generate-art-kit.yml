@@ -1,0 +1,46 @@
+name: Render Mars production sprites
+on:
+  push:
+    branches: ["art/mars-sprite-render-20261008"]
+    paths:
+      - "tooling/build_artkit.py"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  sprites:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Render transparent HD game sprites
+        run: |
+          python -m pip install --quiet cairosvg pillow
+          python tooling/build_artkit.py
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          folder=Path("assets/art/kit")
+          sprites=list(folder.glob("*.png"))
+          assert len(sprites)>=13
+          for item in sprites:
+              image=Image.open(item)
+              assert image.mode=="RGBA",item
+              assert image.getbbox() is not None,item
+              print(item,item.stat().st_size,image.size)
+          PY
+      - name: Commit lossless sprites and editable originals
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/art/kit/
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "art: add 13 transparent Mars mission sprites and vector sources"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin art/mars-sprite-render-20261008
+            git rebase origin/art/mars-sprite-render-20261008
+            if git push origin HEAD:art/mars-sprite-render-20261008; then exit 0; fi
+            sleep 3
+          done
+          exit 1
