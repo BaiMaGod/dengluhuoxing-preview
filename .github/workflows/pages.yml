@@ -32,7 +32,7 @@ jobs:
           set -euo pipefail
           expected="$(sha256sum js/bundle.js | awk '{print $1}')"
           for attempt in $(seq 1 36); do
-            current="$(curl --fail --silent --show-error --max-time 15 "$PREVIEW_URL/js/bundle.js?rev=$GITHUB_SHA" | sha256sum | awk '{print $1}' || true)"
+            current="$(curl --fail --silent --show-error --max-time 15 "${PREVIEW_URL}js/bundle.js?rev=$GITHUB_SHA" | sha256sum | awk '{print $1}' || true)"
             if [ "$current" = "$expected" ]; then
               echo "Live Pages content matches current main branch"
               exit 0
