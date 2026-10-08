@@ -1002,7 +1002,24 @@
 
   // assets/scripts/prototype/GameplayArt.ts
   var GameplayArt = class {
+    static async preload() {
+      await Promise.all(["stage1_engine","stage1_tank","stage2_engine","stage2_tank","escape","cockpit","astronaut","asteroid","fuel","metal","chip","suit_energy","hud_panel"].map(async name => {
+        const url = `art/kit/${name}.png`;
+        try { await Laya.loader.load(url); } catch(e) { console.warn("[MarsArt] texture preload failed:",url,e); }
+      }));
+    }
+    static paint(g, name, w, h) {
+      const texture = Laya.loader.getRes(`art/kit/${name}.png`);
+      if (!texture) return false;
+      g.clear();
+      g.drawTexture(texture, 0, 0, w, h);
+      return true;
+    }
     static module(g, kind, w, h, lucky = false) {
+      if (GameplayArt.paint(g, kind, w, h)) {
+        if(lucky) g.drawCircle(w*.89, h*.17, Math.min(w,h)*.095,"#FFF1A3","#E9A839",2);
+        return;
+      }
       g.clear();
       const colors = {
         stage1_engine: "#F48258",
@@ -1047,6 +1064,7 @@
       }
     }
     static pickup(g, type, size) {
+      if(GameplayArt.paint(g,type,size,size))return;
       g.clear();
       const center = size / 2;
       const color = type === "fuel" ? "#85D891" : type === "metal" ? "#B4CBDF" : type === "chip" ? "#B39BFA" : "#60D9EE";
@@ -1071,6 +1089,7 @@
       }
     }
     static obstacle(g, w, h) {
+      if(GameplayArt.paint(g,"asteroid",w,h))return;
       g.clear();
       g.drawPoly(
         0,
@@ -1085,6 +1104,7 @@
       g.drawLine(w * 0.45, h * 0.15, w * 0.58, h * 0.34, "#F6CAA2", 3);
     }
     static astronaut(g, w, h) {
+      if(GameplayArt.paint(g,"astronaut",w,h))return;
       g.clear();
       g.drawRect(2, h * 0.36, w * 0.18, h * 0.36, "#F09B6C", "#4C6986", 2);
       g.drawRect(w * 0.26, h * 0.4, w * 0.5, h * 0.38, "#EAF4FF", "#567D9B", 2);
@@ -2790,8 +2810,10 @@
       const width = Laya.stage.width;
       this.panel.size(width, 270);
       this.panel.graphics.clear();
-      this.panel.graphics.drawRect(0, 0, width, 270, "#091B2F");
-      this.panel.graphics.drawRect(0, 268, width, 2, "#345777");
+      if (!GameplayArt.paint(this.panel.graphics, "hud_panel", width, 270)) {
+        this.panel.graphics.drawRect(0, 0, width, 270, "#091B2F");
+        this.panel.graphics.drawRect(0, 268, width, 2, "#345777");
+      }
       this.title.size(width, 36).pos(0, 14);
       this.status.size(width, 34).pos(0, 53);
       this.hint.size(width, 32).pos(0, 93);
@@ -2816,8 +2838,11 @@
       this.lastBarKey = key;
       const g = this.fuelBar.graphics;
       g.clear();
-      g.drawRect(0, 0, width, 12, "#273E57");
-      if (percent > 0) g.drawRect(0, 0, width * percent / 100, 12, percent < 25 ? "#F78C78" : "#F7CF79");
+      g.drawRect(0,0,width,16,"#0A2037","#72ACD0",2);
+      if(percent>0) {
+        g.drawRect(2,2,Math.max(0,(width-4)*percent/100),12,percent<25?"#FF796B":"#F9CD6E");
+        g.drawRect(3,3,Math.max(0,(width-6)*percent/100),3,percent<25?"#FFC1AD":"#FFF2B9");
+      }
     }
     update(deltaMs) {
       if (this.toastRemainingMs <= 0) return;
@@ -3072,7 +3097,8 @@
       const label = this.label = new Laya.Text();
       label.text = `${definition.label}
 Lv.${level}${this.isLucky ? " ✦" : ""}`;
-      label.color = definition.kind === "cockpit" ? "#26364D" : "#FFFFFF";
+      label.color = "#FFFFFF";
+      label.stroke = 2; label.strokeColor = "#142840";
       label.fontSize = 24;
       label.bold = true;
       label.align = "center";
@@ -4804,6 +4830,7 @@ Lv.${level}${this.isLucky ? " ✦" : ""}`;
       Laya.stage.alignV = Laya.Stage.ALIGN_MIDDLE;
       yield Laya.Physics2D.I.enable();
       configurePhysicsCompatibility();
+      yield GameplayArt.preload();
       console.info(`[Mars Prototype] platform=${PlatformManager.current.name}`);
       const prototype = new BuildPrototype();
       prototype.mount(Laya.stage);
