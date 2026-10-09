@@ -25,7 +25,7 @@ jobs:
           import json
           v=json.load(open("version.json"))
           assert v["sourceRepository"] == "BaiMaGod/dengluhuoxing" and v["sourceCommit"] == "b4ca19d63ff7b55b690cf976b6e05785d4b91aa6"
-          print("Publishing verified main",v["sourceCommit"])
+          print("Verified compiled source baseline",v["sourceCommit"])
           PY
       - uses: actions/setup-node@v4
         with:
@@ -196,6 +196,14 @@ jobs:
               scan(Laya.stage);return found;
             },null,{timeout:5000});
             await page.waitForTimeout(600);
+            const flightHud = await page.evaluate(() => {
+              const game = globalThis.__MARS_GAME__;
+              return { compact: game?.hud?.compact, height: game?.hud?.panel?.height,
+                title: game?.hud?.title?.text };
+            });
+            assert.equal(flightHud.compact, true, "Flight must switch to compact HUD");
+            assert.equal(flightHud.height, 222, "Flight HUD must free more playfield space");
+            assert.equal(flightHud.title, "火星远征");
             await page.screenshot({path:"live-ignition.png"});
             assert.deepEqual(errors,[]);
             console.log("Live preview loaded and entered rocket construction",url,version.sourceCommit);
