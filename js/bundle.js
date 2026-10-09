@@ -652,6 +652,7 @@
     stage2AltitudeMetersPerSecond: 20,
     astronautAltitudeMetersPerSecond: 12,
     escapeTransitionMs: 700,
+    maxPhysicsSubstepsPerFrame: 5,
     astronautEnergySeconds: 20,
     astronautObstacleEnergyDamage: 0.25,
     astronautMaxHorizontalSpeed: 155,
@@ -674,15 +675,17 @@
     if (random < weights.supply) return mode === "astronaut" ? "suit_energy" : "fuel";
     return random < weights.supply + weights.metal ? "metal" : "chip";
   }
-  function createRouteWave(mode, width, index, random) {
+  function createRouteWave(mode, width, index, random, previousSafeIndex = 1) {
     const lanes = [160, width / 2, width - 160];
-    const safeIndex = index === 0 ? 1 : Math.min(2, Math.floor(random() * 3));
+    const previous = Math.max(0, Math.min(2, Math.floor(previousSafeIndex)));
+    const step = Math.max(0, Math.min(2, Math.floor(random() * 3))) - 1;
+    const safeIndex = index === 0 ? 1 : Math.max(0, Math.min(2, previous + step));
     const safeX = lanes[safeIndex];
     const others = lanes.filter((_, i) => i !== safeIndex);
     const pattern = index % 3;
     const obstacleXs = index === 0 ? [] : pattern === 2 ? others : [others[index % 2]];
     const type = index === 0 ? mode === "astronaut" ? "suit_energy" : "fuel" : pattern === 1 ? "chip" : rollRoutePickup(mode, random());
-    return { safeX, obstacleXs, pickups: [0, 1, 2].map((i) => ({
+    return { safeIndex, safeX, obstacleXs, pickups: [0, 1, 2].map((i) => ({
       x: safeX,
       type: i === 1 ? type : "metal",
       delayMs: i * GameConfig.routePickupGapMs
@@ -695,6 +698,7 @@
       this.mode = null;
       this.elapsedMs = 0;
       this.wave = 0;
+      this.lastSafeIndex = 1;
       this.pending = [];
       this.seed = 1;
     }
@@ -705,6 +709,7 @@
       this.mode = mode;
       this.elapsedMs = 0;
       this.wave = 0;
+      this.lastSafeIndex = 1;
       this.pending.length = 0;
       if (mode) this.emitWave();
     }
@@ -725,7 +730,8 @@
       }
     }
     emitWave() {
-      const wave = createRouteWave(this.mode, Laya.stage.width, this.wave++, () => this.random());
+      const wave = createRouteWave(this.mode, Laya.stage.width, this.wave++, () => this.random(), this.lastSafeIndex);
+      this.lastSafeIndex = wave.safeIndex;
       for (const x of wave.obstacleXs) this.spawnObstacle(x);
       this.pending.push(...wave.pickups);
     }
@@ -4027,8 +4033,11 @@
       if (!this.suspended && !this.isIdlePhase()) {
         if (this.skipResumeDelta) this.skipResumeDelta = false;
         else {
-          this.elapsedAccumulatorMs += Math.min(250, delta);
           const stepMs = 1e3 / 60;
+          this.elapsedAccumulatorMs = Math.min(
+            stepMs * GameConfig.maxPhysicsSubstepsPerFrame,
+            Math.max(0, this.elapsedAccumulatorMs) + Math.max(0, Math.min(250, delta))
+          );
           while (this.elapsedAccumulatorMs + 1e-3 >= stepMs) {
             this.elapsedAccumulatorMs -= stepMs;
             this.updateSimulation(stepMs);
