@@ -34,12 +34,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if fc-list :lang=zh family | grep -q .; then
+          fc-list :lang=zh family > /tmp/mars-cjk-fonts.txt
+          if test -s /tmp/mars-cjk-fonts.txt; then
             echo "Existing CJK font detected"
           else
-            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq               -o Acquire::Retries=1 -o Acquire::http::Timeout=15 fonts-noto-cjk
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq -o Acquire::Retries=1 -o Acquire::http::Timeout=15 fonts-noto-cjk
           fi
-          fc-list :lang=zh family | head -n 4
+          fc-list :lang=zh family | sed -n '1,4p'
       - name: Start Pages-equivalent local static server
         run: |
           python3 -m http.server 4173 --bind 127.0.0.1 --directory . >/tmp/mars-preview-http.log 2>&1 &
