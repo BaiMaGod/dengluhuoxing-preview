@@ -2827,6 +2827,8 @@
       this.toastRemainingMs = 0;
       this.fuelBar = new Laya.Sprite();
       this.lastBarKey = "";
+      this.compact = false;
+      this.lastDisplayedFuelRatio = 1;
       this.title = new Laya.Text();
       this.status = new Laya.Text();
       this.hint = new Laya.Text();
@@ -2906,29 +2908,64 @@
       this.toastPlate.visible = value && this.toastRemainingMs > 0;
       if (!value) this.toast.text = "";
     }
+    setCompact(value) {
+      if (this.compact === value) return;
+      this.compact = value;
+      this.title.text = value ? "火星远征" : "抢先登陆火星";
+      this.layout();
+    }
     layout() {
       const width = Laya.stage.width;
-      this.panel.size(width, 270);
+      const panelHeight = this.compact ? 222 : 270;
+      this.panel.size(width, panelHeight);
       this.panel.graphics.clear();
-      if (!GameplayArt.paint(this.panel.graphics, "hud_panel", width, 270)) {
-        this.panel.graphics.drawRect(0, 0, width, 270, "#091B2F");
-        this.panel.graphics.drawRect(0, 268, width, 2, "#345777");
+      if (!GameplayArt.paint(this.panel.graphics, "hud_panel", width, panelHeight)) {
+        this.panel.graphics.drawRect(0, 0, width, panelHeight, "#091B2F");
+        this.panel.graphics.drawRect(0, panelHeight - 2, width, 2, "#345777");
       }
-      this.title.size(width, 36).pos(0, 14);
-      this.status.size(width, 34).pos(0, 53);
-      this.hint.size(width, 32).pos(0, 93);
-      this.fuel.size(width, 32).pos(0, 130);
-      this.fuelBar.pos(30, 165);
-      this.health.size(width, 32).pos(0, 181);
-      this.runInfo.size(width, 52).pos(0, 215);
-      this.toast.size(width, 52).pos(0, 320);
+      if (this.compact) {
+        this.title.fontSize = 25;
+        this.title.align = "left";
+        this.title.size(width - 178, 32).pos(24, 13);
+        this.status.fontSize = 23;
+        this.status.align = "left";
+        this.status.size(width - 164, 30).pos(24, 45);
+        this.hint.fontSize = 20;
+        this.hint.size(width - 40, 26).pos(20, 77);
+        this.fuel.fontSize = 22;
+        this.fuel.size(width - 40, 29).pos(20, 105);
+        this.fuelBar.pos(30, 139);
+        this.health.fontSize = 21;
+        this.health.size(width - 40, 28).pos(20, 157);
+        this.runInfo.fontSize = 19;
+        this.runInfo.size(width - 44, 42).pos(22, 180);
+      } else {
+        this.title.fontSize = 28;
+        this.title.align = "center";
+        this.title.size(width, 36).pos(0, 14);
+        this.status.fontSize = 26;
+        this.status.align = "center";
+        this.status.size(width, 34).pos(0, 53);
+        this.hint.fontSize = 23;
+        this.hint.size(width, 32).pos(0, 93);
+        this.fuel.fontSize = 24;
+        this.fuel.size(width, 32).pos(0, 130);
+        this.fuelBar.pos(30, 165);
+        this.health.fontSize = 24;
+        this.health.size(width, 32).pos(0, 181);
+        this.runInfo.fontSize = 23;
+        this.runInfo.size(width, 52).pos(0, 215);
+      }
+      const toastY = panelHeight + 45;
+      this.toast.size(width, 52).pos(0, toastY);
       this.toastPlate.graphics.clear();
       const plateWidth = Math.min(width - 80, 560);
       this.toastPlate.graphics.drawRect(3, 7, plateWidth - 6, 49, "#051B30A8");
       this.toastPlate.graphics.drawRect(0, 0, plateWidth, 48, "#163E5FD9", "#9FE2F6", 2);
       this.toastPlate.graphics.drawRect(12, 5, plateWidth - 24, 3, "#FFE4A777");
-      this.toastPlate.pos((width - plateWidth) / 2, 320);
+      this.toastPlate.pos((width - plateWidth) / 2, toastY);
       this.lastBarKey = "";
+      if (this.fuelBar.visible) this.drawFuelBar(this.lastDisplayedFuelRatio);
     }
     showMilestone(meters) {
       this.showToast(`突破 ${this.formatAltitude(meters)}！`);
@@ -2937,6 +2974,7 @@
       this.showToast(offset < 12 ? "完美对齐！" : offset < 40 ? "落稳了 · 继续搭建" : "偏移较大 · 下一块注意重心");
     }
     drawFuelBar(ratio) {
+      this.lastDisplayedFuelRatio = ratio;
       const width = Laya.stage.width - 60, percent = Math.round(Math.max(0, Math.min(1, ratio)) * 100);
       const key = `${width}:${percent}`;
       this.fuelBar.visible = true;
@@ -2966,6 +3004,7 @@
       this.toastRemainingMs = 1250;
     }
     setProgress(current, total, message = "") {
+      this.setCompact(false);
       this.status.text = message || `搭建进度 ${current} / ${total}`;
       this.fuel.text = "";
       this.health.text = "";
@@ -2990,6 +3029,7 @@
       this.toastRemainingMs = 0;
     }
     setBuildReady(metrics, luckyCount) {
+      this.setCompact(false);
       const percent = Math.round(
         metrics.stability * 100
       );
@@ -3004,6 +3044,7 @@
       this.toastPlate.visible = false;
     }
     setIgnition(metrics, hp, maxHp) {
+      this.setCompact(true);
       const percent = Math.round(
         metrics.stability * 100
       );
@@ -3017,6 +3058,7 @@
       );
     }
     setStageFlight(stage, fuelRatio, metrics, input, hp, maxHp) {
+      this.setCompact(true);
       const stability = Math.round(
         metrics.stability * 100
       );
@@ -3078,6 +3120,7 @@
       this.health.visible = false;
     }
     setAstronautFlight(energyRatio, input) {
+      this.setCompact(true);
       const percent = Math.round(
         Math.max(
           0,
