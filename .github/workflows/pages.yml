@@ -60,7 +60,8 @@ jobs:
           page.on("pageerror",e=>errors.push(e.message));
           page.on("response",r=>{if(r.status()>=400&&!r.url().endsWith("favicon.ico"))errors.push(r.status()+" "+r.url());});
           try {
-            await page.goto(url,{waitUntil:"domcontentloaded"});
+            // The runtime diagnostic bridge is only available on loopback with ?e2e=1.
+            await page.goto(new URL("?e2e=1",url).toString(),{waitUntil:"domcontentloaded"});
             await page.waitForFunction(()=>globalThis.Laya?.stage?.numChildren>0);
             await page.waitForTimeout(600);
             const expectedArt=["stage1_engine","stage1_tank","stage2_engine","stage2_tank","escape","cockpit","astronaut","asteroid","fuel","metal","chip","suit_energy","hud_panel"];
