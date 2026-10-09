@@ -30,8 +30,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Install Chinese fonts for accurate visual QA
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
+      - name: Ensure CJK fonts without full apt index refresh
+        shell: bash
+        run: |
+          set -euo pipefail
+          if fc-list :lang=zh family | grep -q .; then
+            echo "Existing CJK font detected"
+          else
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq               -o Acquire::Retries=1 -o Acquire::http::Timeout=15 fonts-noto-cjk
+          fi
+          fc-list :lang=zh family | head -n 4
       - name: Start Pages-equivalent local static server
         run: |
           python3 -m http.server 4173 --bind 127.0.0.1 --directory . >/tmp/mars-preview-http.log 2>&1 &
