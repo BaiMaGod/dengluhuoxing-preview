@@ -1,4 +1,6 @@
 {
   "repository": "BaiMaGod/dengluhuoxing",
-  "sha": "87a2f1994dc0b32244334a6998fb917c63f78c96"
+  "sha": "4c38b19acea401e760b1ec9d65ff7527438305e6",
+  "developmentReviewSourceCommit": "87a2f1994dc0b32244334a6998fb917c63f78c96",
+  "status": "latest source awaits official CLI build and final browser verification"
 }

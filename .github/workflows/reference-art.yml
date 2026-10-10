@@ -1,7 +1,7 @@
 name: Mars reference artwork review and official build
 on:
   push:
-    branches: [art-v6-review]
+    branches: [art-v6-review, art-v6-official]
     paths: ['js/bundle.js', 'index.html', 'art/**', '.github/scripts/art-visual.mjs', '.github/scripts/gameplay-smoke.mjs', 'source-ref.json']
   workflow_dispatch:
 permissions:
@@ -11,6 +11,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   visual-review:
+    if: github.ref == 'refs/heads/art-v6-review'
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
