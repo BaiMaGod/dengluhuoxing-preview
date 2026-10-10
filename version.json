@@ -1,39 +1,5 @@
 {
   "sourceRepository": "BaiMaGod/dengluhuoxing",
-  "sourceCommit": "b4ca19d63ff7b55b690cf976b6e05785d4b91aa6",
-  "sourceWorkflowRun": 37742665144,
-  "engine": "LayaAir 3.4.0",
-  "flightArtPatched": true,
-  "artAssets": 13,
-  "artSourceCommit": "cf22d51394800216c4506595f9d77bd866f7e958",
-  "artIntegration": "compiled Web patch: V4 visual overlays plus V5 route/physics/HUD incremental changes; original LayaAir source-build base retained",
-  "visualPatchCommits": [
-    "52da81faee09841982854d45655097f7254ed45f",
-    "ea27268b8bce9487a4edcab2c46e57230b434d8b",
-    "01aa5625551889ad787e44509edd72f50bb974da",
-    "a131742ad657a9607657a5c11c78ca6377f15e25",
-    "9f738f115658b9c135ea46d5a5e6398f08c44f13",
-    "2b417973fa04e25adb3d1ce8d198350ff9fe37b5"
-  ],
-  "visualOnly": false,
-  "previewNote": "NOT a full current-source build. Base LayaAir bundle remains at sourceCommit; V5 route fairness, physics substep cap and compact HUD are manually synchronized compiled-code patches.",
-  "newCosmeticAnimation": "pickup pulse + asteroid sprite roll, sensors unchanged",
-  "visualPatchThroughCommit": "da4319b97d284a3a3cf27a44312eb3239386dd37",
-  "visualFeatures": [
-    "gold launch button",
-    "two-stage rocket flame",
-    "dual astronaut jets",
-    "pooled separation and escape shockwaves",
-    "compact build-only module labels",
-    "hidden module lettering during flight"
-  ],
-  "provenanceNote": "Incrementally patched Web bundle; unpatched core systems still reflect older compiled source. A complete official LayaAir rebuild is required before claiming full main parity.",
-  "incrementalGameplayPatch": true,
-  "incrementalPatchMainCommit": "321c54ebb4c9c0377c5a1d3666651b3b8d85627a",
-  "incrementalPatchFeatures": [
-    "Adjacent-lane safe corridor transitions in stage1, stage2 and astronaut routes",
-    "5 maximum Box2D substeps per frame during stalls",
-    "compact in-flight HUD (270 -> 222 design units) with pause-button clearance"
-  ],
-  "fullMainSourceRebuilt": false
+  "sourceCommit": "a75e096f8f4d592cf6c6bf707c99ef828499f8a5",
+  "status": "development visual review candidate; official release gate pending"
 }

@@ -1,0 +1,140 @@
+name: Mars reference artwork review and official build
+on:
+  push:
+    branches: [art-v6-review]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: mars-reference-art-review
+  cancel-in-progress: true
+jobs:
+  visual-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Browser dependencies and Chinese fonts
+        run: |
+          npm install --no-save --ignore-scripts playwright-core@1.55.0 > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk
+      - name: Serve full current-source development build
+        run: |
+          mkdir -p artifacts
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory . > /tmp/mars-art-http.log 2>&1 &
+          for n in $(seq 1 20); do curl -fsS http://127.0.0.1:4173/index.html > /dev/null && exit 0; sleep 1; done
+          exit 1
+      - name: True touch play and screenshots in two phone sizes
+        run: |
+          export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
+          export SMOKE_URL=http://127.0.0.1:4173
+          node .github/scripts/art-visual.mjs
+      - name: Full gameplay lifecycle regression
+        run: |
+          export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
+          export SMOKE_URL=http://127.0.0.1:4173
+          node .github/scripts/gameplay-smoke.mjs
+      - name: Review screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mars-v6-visual-review
+          path: artifacts/
+  official-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: preview
+      - name: Read fixed source revision
+        id: source
+        run: |
+          sha="$(python3 -c 'import json;print(json.load(open("preview/source-ref.json"))["sha"])')"
+          test "${#sha}" = 40
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+      - name: Require source read token
+        env:
+          SOURCE_READ_TOKEN: ${{ secrets.LAYA_SOURCE_READ_TOKEN || secrets.PREVIEW_SOURCE_READ_TOKEN }}
+        run: |
+          if [ -z "$SOURCE_READ_TOKEN" ]; then
+            echo 'Configure LAYA_SOURCE_READ_TOKEN (fine-grained, Contents read-only for BaiMaGod/dengluhuoxing) on this public preview repository.'
+            exit 1
+          fi
+      - name: Checkout private source only in temporary runner directory
+        uses: actions/checkout@v4
+        with:
+          repository: BaiMaGod/dengluhuoxing
+          ref: ${{ steps.source.outputs.sha }}
+          token: ${{ secrets.LAYA_SOURCE_READ_TOKEN || secrets.PREVIEW_SOURCE_READ_TOKEN }}
+          path: source
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Official CLI and screenshot dependencies
+        run: |
+          curl -fsSL --retry 2 https://raw.githubusercontent.com/layabox/layaair-cli/master/install.sh | bash
+          "$HOME/.layaair/layaair" install 3.4.0
+          "$HOME/.layaair/layaair" list
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk
+          cd source
+          npm install --no-save --ignore-scripts typescript@5.9.2 playwright-core@1.55.0 > /dev/null
+          ln -s "$HOME/.layaair/3.4.0/Resources/engine/types" engine
+      - name: Real type check and rule regression
+        working-directory: source
+        run: |
+          ./node_modules/.bin/tsc -p tsconfig.json --noEmit
+          node .github/scripts/logic-test.mjs
+      - name: Official full Web build
+        working-directory: source
+        run: |
+          mkdir -p artifacts build/web
+          "$HOME/.layaair/layaair" --version=3.4.0 build web -p . -o "$PWD/build/web"
+          index="$(find "$PWD/build/web" -maxdepth 5 -name index.html -type f | head -1)"
+          test -n "$index"
+          echo "WEB_ROOT=$(dirname "$index")" >> "$GITHUB_ENV"
+      - name: Serve actual official package
+        run: |
+          python3 -m http.server 4174 --bind 127.0.0.1 --directory "$WEB_ROOT" > /tmp/mars-official-http.log 2>&1 &
+          for n in $(seq 1 20); do curl -fsS http://127.0.0.1:4174/index.html > /dev/null && exit 0; sleep 1; done
+          exit 1
+      - name: Official package visual and complete gameplay tests
+        working-directory: source
+        run: |
+          export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
+          export SMOKE_URL=http://127.0.0.1:4174
+          node .github/scripts/art-visual.mjs
+          node .github/scripts/smoke-test.mjs
+      - name: Record exact verified package
+        env:
+          SOURCE_SHA: ${{ steps.source.outputs.sha }}
+        run: |
+          python3 - <<'PY'
+          import json,os,hashlib,pathlib
+          root=pathlib.Path(os.environ['WEB_ROOT'])
+          files={str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in root.rglob('*') if p.is_file()}
+          assert any(p.endswith('libs/laya.core.js') for p in files)
+          assert not any(p.endswith(('.ts','.map','.laya','.md')) for p in files)
+          evidence={'sourceRepository':'BaiMaGod/dengluhuoxing','sourceCommit':os.environ['SOURCE_SHA'],'engine':'LayaAir 3.4.0 official CLI','browserSmokePassed':True,'browserSmokeViewport':['390x844','375x667'],'files':files}
+          (root/'_build-evidence.json').write_text(json.dumps(evidence,indent=2))
+          PY
+      - name: Verified Web package only
+        uses: actions/upload-artifact@v4
+        with:
+          name: mars-v6-official-web
+          path: ${{ env.WEB_ROOT }}/
+      - name: Official build screenshots only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mars-v6-official-qa
+          path: |
+            source/artifacts/*.png
+            source/artifacts/*.json
+            source/artifacts/visual/

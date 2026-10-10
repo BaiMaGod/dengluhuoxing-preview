@@ -1,0 +1,146 @@
+{
+  "source": "Built-in ImageGen based on user-approved two Mars reference sheets, 2026-10-10",
+  "preparation": "Explicit sprite bounds, alpha trim, cover-cropped backgrounds, JPEG quality 91, transparent logo proportion preserved",
+  "assets": [
+    {
+      "file": "asteroid.png",
+      "width": 293,
+      "height": 314,
+      "bytes": 230230,
+      "sha256": "bca26bac01e56755375cf3ec0166f8f570e4306fdffa8dfa03a6ed67bc189e4e"
+    },
+    {
+      "file": "astronaut.png",
+      "width": 303,
+      "height": 375,
+      "bytes": 261849,
+      "sha256": "2e651f56f3113850f10f889c8b112868df1af766cd462e699d93119c4703b94e"
+    },
+    {
+      "file": "button_blue.png",
+      "width": 695,
+      "height": 205,
+      "bytes": 181292,
+      "sha256": "a9b1e917af9d58eb07b1c974393826d9f2293bf1b715868a42c25943298bfad5"
+    },
+    {
+      "file": "button_gold.png",
+      "width": 700,
+      "height": 214,
+      "bytes": 191003,
+      "sha256": "d508181f8f469fc87aaac0c2c4d0d229db89abf3966d6dd3d2760c299fdb18ff"
+    },
+    {
+      "file": "chip.png",
+      "width": 267,
+      "height": 264,
+      "bytes": 152244,
+      "sha256": "2b2c03dd8d08f67780e80ff2c95467a32390dff9106e44b805f6341b2b72613f"
+    },
+    {
+      "file": "cockpit.png",
+      "width": 301,
+      "height": 309,
+      "bytes": 180428,
+      "sha256": "d624d7c86f4b7f7fb32cbd41e0c64ceb6e5c0e8d03a15402fc5e7011f3aaf73f"
+    },
+    {
+      "file": "coin.png",
+      "width": 271,
+      "height": 272,
+      "bytes": 158336,
+      "sha256": "51758cc4aaeeb352e7b2e01da83eac86bff1235d7eb5bae9e591e41de3f6151a"
+    },
+    {
+      "file": "escape.png",
+      "width": 208,
+      "height": 309,
+      "bytes": 176935,
+      "sha256": "17634e48083b06f7ef4d31ba4809d2bd508a9a05d45de11942ccd042bd9cc511"
+    },
+    {
+      "file": "flight.jpg",
+      "width": 900,
+      "height": 1600,
+      "bytes": 282433,
+      "sha256": "831682ca2b0f011f2e56d89ab490ecc8d77b7cbbd9113e6fcd76004333701f85"
+    },
+    {
+      "file": "fuel.png",
+      "width": 203,
+      "height": 294,
+      "bytes": 145698,
+      "sha256": "db6e5500e4bb3e26354a27df1d330c3b10b7926ffea23284e7df0dcd7d54a2e3"
+    },
+    {
+      "file": "hangar.jpg",
+      "width": 900,
+      "height": 1600,
+      "bytes": 369418,
+      "sha256": "54c607480660200533892f80ba1fcb8c26c2f246d0a87206e1d564d2e9f851a3"
+    },
+    {
+      "file": "home.jpg",
+      "width": 900,
+      "height": 1600,
+      "bytes": 350040,
+      "sha256": "3fcb4c2e5e3e51f04b9b2d63169b2a3f80c8447d3262d2f203ccafdaf96a5b30"
+    },
+    {
+      "file": "logo.png",
+      "width": 900,
+      "height": 670,
+      "bytes": 1055375,
+      "sha256": "8e0be0bd726cc0280c5e2b64db91cf74afdd3832cc3caf9ebe9d1dc1b64fea7d"
+    },
+    {
+      "file": "metal.png",
+      "width": 260,
+      "height": 293,
+      "bytes": 165787,
+      "sha256": "ae2f76acb65cd2aa23b31757d639251fc0f7397dd4656ce4bc2c0bb4cec7e2e6"
+    },
+    {
+      "file": "panel.png",
+      "width": 727,
+      "height": 269,
+      "bytes": 295135,
+      "sha256": "025fa2411389e20b1d4351ea89755d7c7a4e1503073cbe04c40b968d6994346f"
+    },
+    {
+      "file": "stage1_engine.png",
+      "width": 305,
+      "height": 284,
+      "bytes": 230563,
+      "sha256": "00c5e6bf5dce115db7281c608a384a905c09c8874fe32c121478e0c1926ca9d9"
+    },
+    {
+      "file": "stage1_tank.png",
+      "width": 183,
+      "height": 389,
+      "bytes": 197583,
+      "sha256": "2064095c9a8c44de73eb3efb184202f6d5483592792697cfbf10df577d405ced"
+    },
+    {
+      "file": "stage2_engine.png",
+      "width": 189,
+      "height": 287,
+      "bytes": 146698,
+      "sha256": "3515c02d497cd29c92de4f36c9accdd9d147ca401a8c8af435bf0ae4ace0df19"
+    },
+    {
+      "file": "stage2_tank.png",
+      "width": 184,
+      "height": 348,
+      "bytes": 167930,
+      "sha256": "b636e354b87a6af212fe3b6c676a6d566b58672a7515d8c5038a3552190ef4f4"
+    },
+    {
+      "file": "suit_energy.png",
+      "width": 267,
+      "height": 264,
+      "bytes": 152244,
+      "sha256": "2b2c03dd8d08f67780e80ff2c95467a32390dff9106e44b805f6341b2b72613f"
+    }
+  ]
+}
