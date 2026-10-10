@@ -1,0 +1,39 @@
+name: Compare actual Laya rendering configurations
+on:
+  push:
+    branches: [art-v6-review]
+    paths: ['render-benchmark.html', '.github/scripts/render-benchmark.mjs', '.github/workflows/render-benchmark.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  render-benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: 44cacf6eb13b6d9725a0b34300c3285df20085dd
+          path: baseline
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Browser and font dependencies
+        run: |
+          npm install --no-save --ignore-scripts playwright-core@1.55.0 > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk
+      - name: Play actual builds and compare frame costs
+        run: |
+          mkdir -p artifacts
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory . > /tmp/mars-render-http.log 2>&1 &
+          python3 -m http.server 4175 --bind 127.0.0.1 --directory baseline > /tmp/mars-render-baseline-http.log 2>&1 &
+          export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
+          node .github/scripts/render-benchmark.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mars-render-comparison
+          path: artifacts/

@@ -2,6 +2,7 @@ name: Mars reference artwork review and official build
 on:
   push:
     branches: [art-v6-review]
+    paths: ['js/bundle.js', 'index.html', 'art/**', '.github/scripts/art-visual.mjs', '.github/scripts/gameplay-smoke.mjs', 'source-ref.json']
   workflow_dispatch:
 permissions:
   contents: read
