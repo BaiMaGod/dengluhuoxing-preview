@@ -18,13 +18,13 @@ var MarsEntry = (() => {
   };
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-  // assets/scripts/Entry.ts
+  // dengluhuoxing/assets/scripts/Entry.ts
   var Entry_exports = {};
   __export(Entry_exports, {
     main: () => main
   });
 
-  // assets/scripts/platform/PlatformManager.ts
+  // dengluhuoxing/assets/scripts/platform/PlatformManager.ts
   var BrowserPlatform = class {
     constructor() {
       this.name = "web";
@@ -38,25 +38,22 @@ var MarsEntry = (() => {
       return () => doc.removeEventListener("visibilitychange", handler);
     }
     saveData(key, value) {
-      var _a;
       try {
-        (_a = globalThis.localStorage) == null ? void 0 : _a.setItem(key, value);
-      } catch (e) {
+        globalThis.localStorage?.setItem(key, value);
+      } catch {
       }
     }
     loadData(key) {
-      var _a, _b;
       try {
-        return (_b = (_a = globalThis.localStorage) == null ? void 0 : _a.getItem(key)) != null ? _b : null;
-      } catch (e) {
+        return globalThis.localStorage?.getItem(key) ?? null;
+      } catch {
         return null;
       }
     }
     vibrate() {
-      var _a, _b;
       try {
-        (_b = (_a = globalThis.navigator) == null ? void 0 : _a.vibrate) == null ? void 0 : _b.call(_a, 18);
-      } catch (e) {
+        globalThis.navigator?.vibrate?.(18);
+      } catch {
       }
     }
   };
@@ -66,38 +63,39 @@ var MarsEntry = (() => {
       this.api = api;
     }
     onVisibilityChange(callback) {
-      var _a, _b, _c, _d;
       const hide = () => callback(false), show = () => callback(true);
-      (_b = (_a = this.api).onHide) == null ? void 0 : _b.call(_a, hide);
-      (_d = (_c = this.api).onShow) == null ? void 0 : _d.call(_c, show);
+      this.api.onHide?.(hide);
+      this.api.onShow?.(show);
       return () => {
-        var _a2, _b2, _c2, _d2;
-        (_b2 = (_a2 = this.api).offHide) == null ? void 0 : _b2.call(_a2, hide);
-        (_d2 = (_c2 = this.api).offShow) == null ? void 0 : _d2.call(_c2, show);
+        this.api.offHide?.(hide);
+        this.api.offShow?.(show);
       };
     }
     saveData(key, value) {
       try {
         this.api.setStorageSync(key, value);
-      } catch (e) {
+      } catch {
       }
     }
     loadData(key) {
       try {
         const v = this.api.getStorageSync(key);
         return v == null ? null : String(v);
-      } catch (e) {
+      } catch {
         return null;
       }
     }
     vibrate(type = "light") {
       try {
         if (this.api.vibrateShort) this.api.vibrateShort({ type });
-      } catch (e) {
+      } catch {
       }
     }
   };
   var PlatformManager = class {
+    static {
+      this._current = null;
+    }
     static get current() {
       if (!this._current) this._current = this.detect();
       return this._current;
@@ -109,9 +107,8 @@ var MarsEntry = (() => {
       return new BrowserPlatform();
     }
   };
-  PlatformManager._current = null;
 
-  // assets/scripts/prototype/PhysicsSimulation.ts
+  // dengluhuoxing/assets/scripts/prototype/PhysicsSimulation.ts
   var configured = false;
   function configurePhysicsCompatibility() {
     const physics = Laya.Physics2D.I;
@@ -121,9 +118,8 @@ var MarsEntry = (() => {
       Object.defineProperty(Laya.Physics2DShapeBase.prototype, `scale${axis}`, {
         configurable: true,
         get() {
-          var _a;
           let scale = 1;
-          let node = (_a = this._body) == null ? void 0 : _a.owner;
+          let node = this._body?.owner;
           while (node && node !== Laya.stage) {
             scale *= axis === "X" ? node.scaleX : node.scaleY;
             node = node.parent;
@@ -195,8 +191,107 @@ var MarsEntry = (() => {
     }
   }
 
-  // assets/scripts/prototype/MissionUi.ts
-  var _MissionUi = class _MissionUi {
+  // dengluhuoxing/assets/scripts/config/GameConfig.ts
+  var GameConfig = {
+    designWidth: 750,
+    designHeight: 1334,
+    platformWidth: 520,
+    platformHeight: 36,
+    platformBottom: 120,
+    spawnGap: 230,
+    settleMs: 550,
+    nextModuleDelayMs: 220,
+    restartDelayMs: 1100,
+    maxSafeTilt: 58,
+    velocitySettleThreshold: 5,
+    angularSettleThreshold: 6,
+    dragMargin: 70,
+    launchDelayMs: 480,
+    verticalFlightSpeed: 92,
+    maxHorizontalSpeed: 96,
+    steeringResponseMs: 420,
+    stabilityDriftSpeed: 28,
+    flightControlDragDistance: 150,
+    flightEdgeMargin: 125,
+    flightAnchorY: 760,
+    flightModuleScale: 0.64,
+    stage1FuelSeconds: 30,
+    stage2FuelSeconds: 22,
+    stage2SpeedMultiplier: 1.18,
+    stageSeparationMs: 1e3,
+    stage2IgnitionBoostMs: 1500,
+    stage2IgnitionBoostMultiplier: 1.2,
+    rocketMaxHp: 3,
+    damageCooldownMs: 600,
+    obstacleWidth: 86,
+    obstacleHeight: 66,
+    obstacleSpawnY: -80,
+    obstacleStage1SpawnMs: 3400,
+    obstacleStage2SpawnMs: 2200,
+    obstacleAstronautSpawnMs: 1800,
+    obstacleStage1Speed: 112,
+    obstacleStage2Speed: 145,
+    obstacleAstronautSpeed: 165,
+    pickupSize: 58,
+    pickupSpawnY: -80,
+    pickupStage1SpawnMs: 2450,
+    pickupStage2SpawnMs: 2150,
+    pickupAstronautSpawnMs: 1900,
+    pickupStage1Speed: 102,
+    pickupStage2Speed: 132,
+    pickupAstronautSpeed: 152,
+    stage1FuelPickupRatio: 0.2,
+    stage2FuelPickupRatio: 0.18,
+    suitEnergyPickupRatio: 0.25,
+    suitEnergyRestoreSeconds: 5,
+    maxBuildFuelPenalty: 0.12,
+    milestoneStepMeters: 500,
+    routeWaveMs: 5400,
+    routePickupGapMs: 700,
+    pickupWeights: {
+      stage1: { supply: 0.2, metal: 0.75, chip: 0.05 },
+      stage2: { supply: 0.26, metal: 0.44, chip: 0.3 },
+      astronaut: { supply: 0.25, metal: 0.35, chip: 0.4 }
+    },
+    stage1AltitudeMetersPerSecond: 16,
+    stageSeparationAltitudeMetersPerSecond: 8,
+    stage2AltitudeMetersPerSecond: 20,
+    astronautAltitudeMetersPerSecond: 12,
+    escapeTransitionMs: 700,
+    // Limit catch-up work to avoid 10+ Box2D substeps after a long frame.
+    maxPhysicsSubstepsPerFrame: 5,
+    astronautEnergySeconds: 20,
+    astronautObstacleEnergyDamage: 0.25,
+    astronautMaxHorizontalSpeed: 155,
+    astronautSteeringResponseMs: 190,
+    astronautControlDragDistance: 110,
+    astronautEdgeMargin: 55,
+    modules: [
+      { kind: "stage1_engine", label: "\u4E00\u7EA7\u53D1\u52A8\u673A", width: 220, height: 104, color: "#E95D4E", density: 1.25 },
+      { kind: "stage1_tank", label: "\u4E00\u7EA7\u71C3\u6599\u4ED3", width: 190, height: 182, color: "#F0B64D", density: 1.15 },
+      { kind: "stage2_engine", label: "\u4E8C\u7EA7\u53D1\u52A8\u673A", width: 188, height: 92, color: "#4B9BE8", density: 1.1 },
+      { kind: "stage2_tank", label: "\u4E8C\u7EA7\u71C3\u6599\u4ED3", width: 168, height: 160, color: "#52C7B8", density: 1 },
+      { kind: "escape", label: "\u9003\u751F\u8231", width: 142, height: 100, color: "#B68BE8", density: 0.72 },
+      { kind: "cockpit", label: "\u9A7E\u9A76\u8231", width: 126, height: 90, color: "#EDEFF4", density: 0.62 }
+    ]
+  };
+  function cappedPhysicsAccumulator(previousMs, frameDeltaMs, stepMs = 1e3 / 60, maxSubsteps = GameConfig.maxPhysicsSubstepsPerFrame) {
+    const safeStepMs = Math.max(1e-3, stepMs);
+    const budgetMs = safeStepMs * Math.max(1, Math.floor(maxSubsteps));
+    return Math.min(
+      budgetMs,
+      Math.max(0, previousMs) + Math.max(0, Math.min(250, frameDeltaMs))
+    );
+  }
+
+  // dengluhuoxing/assets/scripts/prototype/MissionUi.ts
+  var MissionUi = class _MissionUi {
+    static {
+      this.names = ["logo", "button_gold", "button_blue", "panel", "coin", "home", "flight", "hangar"];
+    }
+    static {
+      this.prefix = "art/mission/";
+    }
     static texture(name) {
       return Laya.loader.getRes(`${_MissionUi.prefix}${name}.${["home", "flight", "hangar"].includes(name) ? "jpg" : "png"}`);
     }
@@ -221,8 +316,9 @@ var MarsEntry = (() => {
       const w = Laya.stage.width, h = Laya.stage.height;
       const texture = this.texture(name);
       if (texture) {
-        const scale = Math.max(w / texture.width, h / texture.height);
-        node.graphics.drawTexture(texture, (w - texture.width * scale) / 2, (h - texture.height * scale) / 2, texture.width * scale, texture.height * scale);
+        const scale = name === "hangar" ? Math.max(w / texture.width, (h - Math.max(GameConfig.platformBottom, h * 0.09) - GameConfig.platformHeight / 2) / (texture.height * 0.724)) : Math.max(w / texture.width, h / texture.height);
+        const top = name === "hangar" ? 0 : (h - texture.height * scale) / 2;
+        node.graphics.drawTexture(texture, (w - texture.width * scale) / 2, top, texture.width * scale, texture.height * scale);
       }
       parent.addChildAt(node, 0);
       return node;
@@ -271,12 +367,18 @@ var MarsEntry = (() => {
       return node;
     }
   };
-  _MissionUi.names = ["logo", "button_gold", "button_blue", "panel", "coin", "home", "flight", "hangar"];
-  _MissionUi.prefix = "art/mission/";
-  var MissionUi = _MissionUi;
 
-  // assets/scripts/prototype/GameAudio.ts
+  // dengluhuoxing/assets/scripts/prototype/GameAudio.ts
   var GameAudio = class {
+    static {
+      this.context = null;
+    }
+    static {
+      this.muted = null;
+    }
+    static {
+      this.lastPlayed = /* @__PURE__ */ new Map();
+    }
     static get isMuted() {
       if (this.muted === null) this.muted = PlatformManager.current.loadData("mars.audio.muted") === "1";
       return this.muted;
@@ -290,22 +392,20 @@ var MarsEntry = (() => {
       }
     }
     static unlock() {
-      var _a, _b, _c, _d;
       if (this.isMuted) return;
       const g = globalThis, AudioContext = g.AudioContext || g.webkitAudioContext;
       if (!this.context && AudioContext) {
         try {
           this.context = new AudioContext();
-        } catch (e) {
+        } catch {
           return;
         }
       }
-      (_d = (_c = (_b = (_a = this.context) == null ? void 0 : _a.resume) == null ? void 0 : _b.call(_a)) == null ? void 0 : _c.catch) == null ? void 0 : _d.call(_c, () => {
+      this.context?.resume?.()?.catch?.(() => {
       });
     }
     static suspend() {
-      var _a, _b, _c, _d;
-      (_d = (_c = (_b = (_a = this.context) == null ? void 0 : _a.suspend) == null ? void 0 : _b.call(_a)) == null ? void 0 : _c.catch) == null ? void 0 : _d.call(_c, () => {
+      this.context?.suspend?.()?.catch?.(() => {
       });
     }
     static note(ctx, at, frequency, duration, volume, wave = "sine", endFrequency = frequency) {
@@ -367,16 +467,38 @@ var MarsEntry = (() => {
             });
             break;
         }
-      } catch (e) {
+      } catch {
       }
     }
   };
-  GameAudio.context = null;
-  GameAudio.muted = null;
-  GameAudio.lastPlayed = /* @__PURE__ */ new Map();
 
-  // assets/scripts/prototype/GameplayArt.ts
-  var _GameplayArt = class _GameplayArt {
+  // dengluhuoxing/assets/scripts/prototype/GameplayArt.ts
+  var GameplayArt = class _GameplayArt {
+    static {
+      /** Preload shared HD PNG textures only once; preserve geometry if loading fails. */
+      this.assetNames = [
+        "stage1_engine",
+        "stage1_tank",
+        "stage2_engine",
+        "stage2_tank",
+        "escape",
+        "cockpit",
+        "astronaut",
+        "asteroid",
+        "fuel",
+        "metal",
+        "chip",
+        "suit_energy",
+        "hud_panel"
+      ];
+    }
+    static {
+      this.assetUrls = [
+        ..._GameplayArt.assetNames.filter((name) => name !== "hud_panel").map((name) => `art/mission/${name}.png`),
+        ...["home", "hangar", "flight"].map((name) => `art/mission/${name}.jpg`),
+        ...["logo", "button_gold", "button_blue", "panel", "coin"].map((name) => `art/mission/${name}.png`)
+      ];
+    }
     static async preload() {
       if (!Laya.loader) return;
       await Promise.all(_GameplayArt.assetUrls.map(async (url) => {
@@ -388,8 +510,7 @@ var MarsEntry = (() => {
       }));
     }
     static paint(g, name, width, height) {
-      var _a;
-      const texture = (_a = Laya.loader) == null ? void 0 : _a.getRes(`art/mission/${name === "hud_panel" ? "panel" : name}.png`);
+      const texture = Laya.loader?.getRes(`art/mission/${name === "hud_panel" ? "panel" : name}.png`);
       if (!texture) return false;
       g.clear();
       if (name === "hud_panel") g.draw9Grid(texture, 0, 0, width, height, [42, 42, 42, 42, 0]);
@@ -499,30 +620,8 @@ var MarsEntry = (() => {
       g.drawRect(w * 0.43, h * 0.49, w * 0.17, h * 0.13, "#FFBA73");
     }
   };
-  /** Preload shared HD PNG textures only once; preserve geometry if loading fails. */
-  _GameplayArt.assetNames = [
-    "stage1_engine",
-    "stage1_tank",
-    "stage2_engine",
-    "stage2_tank",
-    "escape",
-    "cockpit",
-    "astronaut",
-    "asteroid",
-    "fuel",
-    "metal",
-    "chip",
-    "suit_energy",
-    "hud_panel"
-  ];
-  _GameplayArt.assetUrls = [
-    ..._GameplayArt.assetNames.filter((name) => name !== "hud_panel").map((name) => `art/mission/${name}.png`),
-    ...["home", "hangar", "flight"].map((name) => `art/mission/${name}.jpg`),
-    ...["logo", "button_gold", "button_blue", "panel", "coin"].map((name) => `art/mission/${name}.png`)
-  ];
-  var GameplayArt = _GameplayArt;
 
-  // assets/scripts/prototype/PauseOverlay.ts
+  // dengluhuoxing/assets/scripts/prototype/PauseOverlay.ts
   var PauseOverlay = class {
     constructor(root, onToggle, onRestart, onHome) {
       this.root = root;
@@ -556,13 +655,12 @@ var MarsEntry = (() => {
       this.button.visible = value && !this.paused;
     }
     setPaused(value) {
-      var _a;
       if (this.paused === value) return;
       this.paused = value;
       this.button.visible = this.active && !value;
       if (value) this.drawModal();
       else {
-        (_a = this.modal) == null ? void 0 : _a.destroy(true);
+        this.modal?.destroy(true);
         this.modal = null;
       }
     }
@@ -571,8 +669,7 @@ var MarsEntry = (() => {
       if (this.paused) this.drawModal();
     }
     drawModal() {
-      var _a;
-      (_a = this.modal) == null ? void 0 : _a.destroy(true);
+      this.modal?.destroy(true);
       const w = Laya.stage.width, h = Laya.stage.height;
       const overlay = this.modal = new Laya.Sprite();
       overlay.name = "pause_overlay";
@@ -631,10 +728,11 @@ var MarsEntry = (() => {
     }
   };
 
-  // assets/scripts/prototype/FlightFeedback.ts
+  // dengluhuoxing/assets/scripts/prototype/FlightFeedback.ts
   var FlightFeedback = class {
     constructor(root) {
       this.root = root;
+      this.reducedMotion = typeof globalThis.matchMedia === "function" && globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches;
       this.labels = [];
       this.sparks = [];
       this.textPool = [];
@@ -663,6 +761,7 @@ var MarsEntry = (() => {
       this.burst(x, y + 18, color, tier);
     }
     burst(x, y, color, tier = "medium") {
+      if (this.reducedMotion) return;
       const count = tier === "major" ? 15 : tier === "medium" ? 9 : 5;
       const radius = tier === "major" ? 11 : tier === "medium" ? 7 : 5;
       const duration = tier === "major" ? 680 : 500;
@@ -685,6 +784,7 @@ var MarsEntry = (() => {
     }
     /** Expand/fade a shockwave separately from physics; up to four can be alive. */
     ring(x, y, color) {
+      if (this.reducedMotion) return;
       if (this.shockwaves.length >= 4) this.recycleWave(this.shockwaves.shift().node);
       const node = this.wavePool.pop() || new Laya.Sprite();
       node.graphics.clear();
@@ -703,8 +803,9 @@ var MarsEntry = (() => {
         const item = this.labels[i];
         item.age += dt;
         const t = Math.min(1, item.age / item.duration);
-        item.node.y = item.y - 64 * (1 - Math.pow(1 - t, 2));
-        item.node.scale(1 + 0.08 * (1 - t), 1 + 0.08 * (1 - t));
+        item.node.y = this.reducedMotion ? item.y : item.y - 64 * (1 - Math.pow(1 - t, 2));
+        const scale = this.reducedMotion ? 1 : 1 + 0.08 * (1 - t);
+        item.node.scale(scale, scale);
         item.node.alpha = t < 0.64 ? 1 : Math.max(0, (1 - t) / 0.36);
         if (t >= 1) {
           this.recycleText(item.node);
@@ -764,7 +865,7 @@ var MarsEntry = (() => {
     }
   };
 
-  // assets/scripts/prototype/PerformanceMonitor.ts
+  // dengluhuoxing/assets/scripts/prototype/PerformanceMonitor.ts
   var PerformanceMonitor = class {
     constructor(root, enabled) {
       this.enabled = enabled;
@@ -807,100 +908,7 @@ var MarsEntry = (() => {
     }
   };
 
-  // assets/scripts/config/GameConfig.ts
-  var GameConfig = {
-    designWidth: 750,
-    designHeight: 1334,
-    platformWidth: 520,
-    platformHeight: 36,
-    platformBottom: 120,
-    spawnGap: 230,
-    settleMs: 550,
-    nextModuleDelayMs: 220,
-    restartDelayMs: 1100,
-    maxSafeTilt: 58,
-    velocitySettleThreshold: 5,
-    angularSettleThreshold: 6,
-    dragMargin: 70,
-    launchDelayMs: 480,
-    verticalFlightSpeed: 92,
-    maxHorizontalSpeed: 96,
-    steeringResponseMs: 420,
-    stabilityDriftSpeed: 28,
-    flightControlDragDistance: 150,
-    flightEdgeMargin: 125,
-    flightAnchorY: 760,
-    flightModuleScale: 0.64,
-    stage1FuelSeconds: 30,
-    stage2FuelSeconds: 22,
-    stage2SpeedMultiplier: 1.18,
-    stageSeparationMs: 1e3,
-    stage2IgnitionBoostMs: 1500,
-    stage2IgnitionBoostMultiplier: 1.2,
-    rocketMaxHp: 3,
-    damageCooldownMs: 600,
-    obstacleWidth: 86,
-    obstacleHeight: 66,
-    obstacleSpawnY: -80,
-    obstacleStage1SpawnMs: 3400,
-    obstacleStage2SpawnMs: 2200,
-    obstacleAstronautSpawnMs: 1800,
-    obstacleStage1Speed: 112,
-    obstacleStage2Speed: 145,
-    obstacleAstronautSpeed: 165,
-    pickupSize: 58,
-    pickupSpawnY: -80,
-    pickupStage1SpawnMs: 2450,
-    pickupStage2SpawnMs: 2150,
-    pickupAstronautSpawnMs: 1900,
-    pickupStage1Speed: 102,
-    pickupStage2Speed: 132,
-    pickupAstronautSpeed: 152,
-    stage1FuelPickupRatio: 0.2,
-    stage2FuelPickupRatio: 0.18,
-    suitEnergyPickupRatio: 0.25,
-    suitEnergyRestoreSeconds: 5,
-    maxBuildFuelPenalty: 0.12,
-    milestoneStepMeters: 500,
-    routeWaveMs: 5400,
-    routePickupGapMs: 700,
-    pickupWeights: {
-      stage1: { supply: 0.2, metal: 0.75, chip: 0.05 },
-      stage2: { supply: 0.26, metal: 0.44, chip: 0.3 },
-      astronaut: { supply: 0.25, metal: 0.35, chip: 0.4 }
-    },
-    stage1AltitudeMetersPerSecond: 16,
-    stageSeparationAltitudeMetersPerSecond: 8,
-    stage2AltitudeMetersPerSecond: 20,
-    astronautAltitudeMetersPerSecond: 12,
-    escapeTransitionMs: 700,
-    // Limit catch-up work to avoid 10+ Box2D substeps after a long frame.
-    maxPhysicsSubstepsPerFrame: 5,
-    astronautEnergySeconds: 20,
-    astronautObstacleEnergyDamage: 0.25,
-    astronautMaxHorizontalSpeed: 155,
-    astronautSteeringResponseMs: 190,
-    astronautControlDragDistance: 110,
-    astronautEdgeMargin: 55,
-    modules: [
-      { kind: "stage1_engine", label: "\u4E00\u7EA7\u53D1\u52A8\u673A", width: 220, height: 104, color: "#E95D4E", density: 1.25 },
-      { kind: "stage1_tank", label: "\u4E00\u7EA7\u71C3\u6599\u4ED3", width: 190, height: 182, color: "#F0B64D", density: 1.15 },
-      { kind: "stage2_engine", label: "\u4E8C\u7EA7\u53D1\u52A8\u673A", width: 188, height: 92, color: "#4B9BE8", density: 1.1 },
-      { kind: "stage2_tank", label: "\u4E8C\u7EA7\u71C3\u6599\u4ED3", width: 168, height: 160, color: "#52C7B8", density: 1 },
-      { kind: "escape", label: "\u9003\u751F\u8231", width: 142, height: 100, color: "#B68BE8", density: 0.72 },
-      { kind: "cockpit", label: "\u9A7E\u9A76\u8231", width: 126, height: 90, color: "#EDEFF4", density: 0.62 }
-    ]
-  };
-  function cappedPhysicsAccumulator(previousMs, frameDeltaMs, stepMs = 1e3 / 60, maxSubsteps = GameConfig.maxPhysicsSubstepsPerFrame) {
-    const safeStepMs = Math.max(1e-3, stepMs);
-    const budgetMs = safeStepMs * Math.max(1, Math.floor(maxSubsteps));
-    return Math.min(
-      budgetMs,
-      Math.max(0, previousMs) + Math.max(0, Math.min(250, frameDeltaMs))
-    );
-  }
-
-  // assets/scripts/prototype/FlightRoutes.ts
+  // dengluhuoxing/assets/scripts/prototype/FlightRoutes.ts
   function rollRoutePickup(mode, random) {
     const weights = GameConfig.pickupWeights[mode];
     if (random < weights.supply) return mode === "astronaut" ? "suit_energy" : "fuel";
@@ -972,7 +980,7 @@ var MarsEntry = (() => {
     }
   };
 
-  // assets/scripts/progression/ModuleRoller.ts
+  // dengluhuoxing/assets/scripts/progression/ModuleRoller.ts
   var ModuleRoller = class {
     static roll(kind, progress) {
       const key = this.getUpgradeKey(
@@ -1001,7 +1009,7 @@ var MarsEntry = (() => {
     }
   };
 
-  // assets/scripts/progression/PlayerProgress.ts
+  // dengluhuoxing/assets/scripts/progression/PlayerProgress.ts
   var SAVE_KEY = "dengluhuoxing.progress.v1";
   var MAX_LEVEL = 5;
   var DEFAULT_PROGRESS = {
@@ -1158,7 +1166,6 @@ var MarsEntry = (() => {
       };
     }
     load() {
-      var _a, _b, _c, _d;
       const raw = PlatformManager.current.loadData(SAVE_KEY);
       if (!raw) {
         return this.cloneDefault();
@@ -1185,20 +1192,20 @@ var MarsEntry = (() => {
           firstFlightRewardClaimed: parsed.firstFlightRewardClaimed === true || this.safeInt(parsed.bestAltitudeMeters, 0) >= 200,
           upgrades: {
             engine: this.safeLevel(
-              (_a = parsed.upgrades) == null ? void 0 : _a.engine
+              parsed.upgrades?.engine
             ),
             fuel: this.safeLevel(
-              (_b = parsed.upgrades) == null ? void 0 : _b.fuel
+              parsed.upgrades?.fuel
             ),
             cockpit: this.safeLevel(
-              (_c = parsed.upgrades) == null ? void 0 : _c.cockpit
+              parsed.upgrades?.cockpit
             ),
             escape: this.safeLevel(
-              (_d = parsed.upgrades) == null ? void 0 : _d.escape
+              parsed.upgrades?.escape
             )
           }
         };
-      } catch (e) {
+      } catch {
         return this.cloneDefault();
       }
     }
@@ -1242,15 +1249,12 @@ var MarsEntry = (() => {
     }
   };
 
-  // assets/scripts/progression/RunRocketStats.ts
+  // dengluhuoxing/assets/scripts/progression/RunRocketStats.ts
   function createRunRocketStats(rolls) {
-    const level = (kind) => {
-      var _a, _b;
-      return Math.max(
-        1,
-        (_b = (_a = rolls[kind]) == null ? void 0 : _a.level) != null ? _b : 1
-      );
-    };
+    const level = (kind) => Math.max(
+      1,
+      rolls[kind]?.level ?? 1
+    );
     const stage1EngineLevel = level("stage1_engine");
     const stage1FuelLevel = level("stage1_tank");
     const stage2EngineLevel = level("stage2_engine");
@@ -1273,7 +1277,7 @@ var MarsEntry = (() => {
     };
   }
 
-  // assets/scripts/prototype/AstronautController.ts
+  // dengluhuoxing/assets/scripts/prototype/AstronautController.ts
   var AstronautController = class {
     constructor(parent, spawn, energySeconds, callbacks) {
       this.energySeconds = energySeconds;
@@ -1471,7 +1475,7 @@ var MarsEntry = (() => {
     }
   };
 
-  // assets/scripts/prototype/FlightBackdropController.ts
+  // dengluhuoxing/assets/scripts/prototype/FlightBackdropController.ts
   var FlightBackdropController = class {
     constructor(root) {
       this.node = new Laya.Sprite();
@@ -1481,6 +1485,7 @@ var MarsEntry = (() => {
       this.band = -1;
       this.scenery = new Laya.Sprite();
       this.illustratedAtmosphere = new Laya.Sprite();
+      this.reducedMotion = typeof globalThis.matchMedia === "function" && globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches;
       this.node.name = "flight_backdrop";
       this.node.size(
         Laya.stage.width,
@@ -1541,7 +1546,7 @@ var MarsEntry = (() => {
       this.drawTheme(altitudeMeters);
       const dt = deltaMs / 1e3;
       for (const marker of this.markers) {
-        marker.node.y += scrollSpeed * marker.factor * dt;
+        marker.node.y += (this.reducedMotion ? 0 : scrollSpeed) * marker.factor * dt;
         if (marker.node.y > Laya.stage.height + 60) {
           marker.node.y = -60;
           marker.node.x = 30 + Math.random() * Math.max(
@@ -1632,7 +1637,7 @@ var MarsEntry = (() => {
     }
   };
 
-  // assets/scripts/progression/UpgradeBenefits.ts
+  // dengluhuoxing/assets/scripts/progression/UpgradeBenefits.ts
   function upgradeBenefit(key, level) {
     const next = level + 1;
     const fuel = (n) => 1 + (n - 1) * 0.14;
@@ -1643,7 +1648,7 @@ var MarsEntry = (() => {
     return `\u8F6C\u5411\u7075\u654F\u5EA6 ${100 + (level - 1) * 10}% \u2192 ${100 + level * 10}%`;
   }
 
-  // assets/scripts/prototype/HomePanel.ts
+  // dengluhuoxing/assets/scripts/prototype/HomePanel.ts
   var HomePanel = class {
     constructor(root) {
       this.root = root;
@@ -1687,8 +1692,7 @@ var MarsEntry = (() => {
       }
     }
     resize() {
-      var _a;
-      if (this.container) (_a = this.refreshView) == null ? void 0 : _a.call(this);
+      if (this.container) this.refreshView?.();
     }
     hide() {
       if (!this.container) return;
@@ -1733,10 +1737,12 @@ var MarsEntry = (() => {
       });
       panel.addChild(gear);
       MissionUi.text(panel, GameAudio.isMuted ? "\u97F3\u6548\u5173" : "\u97F3\u6548\u5F00", width - 109, 103, 100, 28, 18, "#BED8ED");
-      let y = height * 0.385;
+      const resourceY = height - 455;
+      let y = height * 0.365;
+      const rocketScale = Math.min(0.56, (resourceY - y - 24) / 728);
       for (const definition of [...GameConfig.modules].reverse()) {
         const module = new Laya.Sprite();
-        const w = definition.width * 0.56, h = definition.height * 0.56;
+        const w = definition.width * rocketScale, h = definition.height * rocketScale;
         GameplayArt.module(module.graphics, definition.kind, w, h);
         module.pos(width * 0.245 - w / 2, y);
         panel.addChild(module);
@@ -1746,7 +1752,7 @@ var MarsEntry = (() => {
       mascot.name = "home_astronaut_mascot";
       mascot.mouseEnabled = false;
       GameplayArt.astronaut(mascot.graphics, 270, 340);
-      mascot.pos(width * 0.38, height * 0.515);
+      mascot.pos(width * 0.38, resourceY - 350);
       panel.addChild(mascot);
       const record = new Laya.Sprite();
       record.name = "home_stats_backdrop";
@@ -1958,7 +1964,7 @@ var MarsEntry = (() => {
     }
   };
 
-  // assets/scripts/prototype/FlightObstacleManager.ts
+  // dengluhuoxing/assets/scripts/prototype/FlightObstacleManager.ts
   var FlightObstacle = class {
     constructor(x, y, speed, onHit) {
       this.speed = speed;
@@ -2014,7 +2020,6 @@ var MarsEntry = (() => {
       this.node.destroy(true);
     }
     handleTriggerEnter(colliderB, colliderA) {
-      var _a;
       if (this.consumed) return;
       const names = [
         this.getOwnerName(
@@ -2024,11 +2029,11 @@ var MarsEntry = (() => {
           colliderA
         )
       ];
-      const targetNodeName = (_a = names.find(
+      const targetNodeName = names.find(
         (name) => name.startsWith(
           "rocket_module_"
         )
-      )) != null ? _a : names.find(
+      ) ?? names.find(
         (name) => name === "astronaut_player"
       );
       if (!targetNodeName) {
@@ -2044,7 +2049,7 @@ var MarsEntry = (() => {
         return "";
       }
       const owner = collider.owner;
-      return typeof (owner == null ? void 0 : owner.name) === "string" ? owner.name : "";
+      return typeof owner?.name === "string" ? owner.name : "";
     }
   };
   var FlightObstacleManager = class {
@@ -2155,7 +2160,7 @@ var MarsEntry = (() => {
     }
   };
 
-  // assets/scripts/prototype/FlightPickupManager.ts
+  // dengluhuoxing/assets/scripts/prototype/FlightPickupManager.ts
   var FlightPickup = class {
     constructor(type, x, y, speed, onHit) {
       this.type = type;
@@ -2216,7 +2221,6 @@ var MarsEntry = (() => {
       this.node.destroy(true);
     }
     handleTriggerEnter(colliderB, colliderA) {
-      var _a;
       if (this.consumed) {
         return;
       }
@@ -2228,11 +2232,11 @@ var MarsEntry = (() => {
           colliderA
         )
       ];
-      const targetNodeName = (_a = names.find(
+      const targetNodeName = names.find(
         (name) => name.startsWith(
           "rocket_module_"
         )
-      )) != null ? _a : names.find(
+      ) ?? names.find(
         (name) => name === "astronaut_player"
       );
       if (!targetNodeName) {
@@ -2249,7 +2253,7 @@ var MarsEntry = (() => {
         return "";
       }
       const owner = collider.owner;
-      return typeof (owner == null ? void 0 : owner.name) === "string" ? owner.name : "";
+      return typeof owner?.name === "string" ? owner.name : "";
     }
     getColor(type) {
       if (type === "fuel") {
@@ -2392,7 +2396,7 @@ var MarsEntry = (() => {
     }
   };
 
-  // assets/scripts/prototype/RocketAssembly.ts
+  // dengluhuoxing/assets/scripts/prototype/RocketAssembly.ts
   var RocketAssembly = class {
     constructor(modules) {
       this.modules = modules;
@@ -2512,15 +2516,13 @@ var MarsEntry = (() => {
       this.locked = true;
     }
     setEngineEffect(stage, pulse = 1) {
-      var _a, _b;
-      (_a = this.modules[0]) == null ? void 0 : _a.setThrust(stage === 1, pulse);
-      (_b = this.modules[2]) == null ? void 0 : _b.setThrust(stage === 2, pulse);
+      this.modules[0]?.setThrust(stage === 1, pulse);
+      this.modules[2]?.setThrust(stage === 2, pulse);
     }
     deactivateDebris(index) {
-      var _a;
       if (index >= this.activeStartIndex) return;
       for (const key of [index, index + 1]) {
-        (_a = this.connectionJoints.get(key)) == null ? void 0 : _a.destroy();
+        this.connectionJoints.get(key)?.destroy();
         this.connectionJoints.delete(key);
       }
       const module = this.modules[index];
@@ -2528,7 +2530,6 @@ var MarsEntry = (() => {
       module.body.enabled = false;
     }
     separateStage1(horizontalVelocity, verticalVelocity, drift) {
-      var _a, _b, _c, _d;
       if (!this.locked || this.activeStartIndex >= 2) {
         return;
       }
@@ -2537,7 +2538,7 @@ var MarsEntry = (() => {
         stageBoundaryJoint.destroy();
         this.connectionJoints.delete(2);
       }
-      const spinDirection = Math.abs(drift) > 0.08 ? Math.sign(drift) : ((_b = (_a = this.modules[0]) == null ? void 0 : _a.node.x) != null ? _b : 0) <= ((_d = (_c = this.modules[1]) == null ? void 0 : _c.node.x) != null ? _d : 0) ? -1 : 1;
+      const spinDirection = Math.abs(drift) > 0.08 ? Math.sign(drift) : (this.modules[0]?.node.x ?? 0) <= (this.modules[1]?.node.x ?? 0) ? -1 : 1;
       for (const module of this.modules.slice(0, 2)) {
         module.prepareForDetachedStage(
           horizontalVelocity * 0.82,
@@ -2634,7 +2635,7 @@ var MarsEntry = (() => {
     }
   };
 
-  // assets/scripts/prototype/RocketFlightController.ts
+  // dengluhuoxing/assets/scripts/prototype/RocketFlightController.ts
   var RocketFlightController = class {
     constructor(assembly, metrics, runStats, callbacks) {
       this.assembly = assembly;
@@ -2906,7 +2907,7 @@ var MarsEntry = (() => {
     }
   };
 
-  // assets/scripts/prototype/PrototypeHud.ts
+  // dengluhuoxing/assets/scripts/prototype/PrototypeHud.ts
   var PrototypeHud = class {
     constructor(root) {
       this.root = root;
@@ -3127,8 +3128,8 @@ var MarsEntry = (() => {
       this.status.text = `\u5EFA\u9020\u5B8C\u6210 \xB7 \u7A33\u5B9A\u5EA6 ${percent}%`;
       const penalty = Math.round((1 - metrics.stability) * GameConfig.maxBuildFuelPenalty * 100);
       this.hint.text = penalty > 0 ? `\u642D\u5EFA\u504F\u79FB\uFF1A\u989D\u5916\u71C3\u8017 ${penalty}%` : luckyCount > 0 ? `\u672C\u679A\u706B\u7BAD\u51FA\u73B0 ${luckyCount} \u4E2A\u8D85\u7B49\u7EA7\u6A21\u5757 \u2726` : "\u672C\u679A\u706B\u7BAD\u4E3A\u6807\u51C6\u7B49\u7EA7\u914D\u7F6E";
-      this.fuel.visible = true;
-      this.fuel.text = "\u70B9\u51FB\u201C\u70B9\u706B\u53D1\u5C04\u201D\u5F00\u59CB\u8FDC\u5F81";
+      this.fuel.visible = false;
+      this.fuel.text = "";
       this.health.text = "";
       this.fuelBar.visible = false;
       this.toast.visible = false;
@@ -3316,7 +3317,7 @@ var MarsEntry = (() => {
     }
   };
 
-  // assets/scripts/prototype/RocketModule.ts
+  // dengluhuoxing/assets/scripts/prototype/RocketModule.ts
   var RocketModule = class {
     constructor(definition, x, y, index, level, baseLevel) {
       this.definition = definition;
@@ -3491,7 +3492,7 @@ var MarsEntry = (() => {
     }
   };
 
-  // assets/scripts/prototype/UpgradePanel.ts
+  // dengluhuoxing/assets/scripts/prototype/UpgradePanel.ts
   var UpgradePanel = class {
     constructor(root) {
       this.root = root;
@@ -3514,7 +3515,7 @@ var MarsEntry = (() => {
         620,
         Laya.stage.width - 50
       );
-      const height = 1130;
+      const height = 1060;
       panel.size(
         width,
         height
@@ -3627,8 +3628,7 @@ var MarsEntry = (() => {
       panel.addChild(home);
     }
     hide() {
-      var _a;
-      (_a = this.illustratedBackdrop) == null ? void 0 : _a.destroy(true);
+      this.illustratedBackdrop?.destroy(true);
       this.illustratedBackdrop = null;
       if (!this.container) {
         return;
@@ -3733,7 +3733,7 @@ var MarsEntry = (() => {
     }
   };
 
-  // assets/scripts/prototype/BuildStructure.ts
+  // dengluhuoxing/assets/scripts/prototype/BuildStructure.ts
   function supportedBy(upper, lower, tolerance = 8) {
     if (upper.y >= lower.y) return false;
     const corners = (r) => {
@@ -3783,7 +3783,7 @@ var MarsEntry = (() => {
     });
   }
 
-  // assets/scripts/prototype/BuildPrototype.ts
+  // dengluhuoxing/assets/scripts/prototype/BuildPrototype.ts
   var BuildPrototype = class {
     constructor() {
       this.elapsedAccumulatorMs = 0;
@@ -3830,7 +3830,6 @@ var MarsEntry = (() => {
       this.lastSettlement = null;
     }
     mount(parent) {
-      var _a;
       parent.addChild(
         this.root
       );
@@ -3866,7 +3865,7 @@ var MarsEntry = (() => {
         (x, type) => this.pickupManager.spawnAt(x, type)
       );
       this.feedback = new FlightFeedback(this.world);
-      const debug = new URLSearchParams(((_a = globalThis.location) == null ? void 0 : _a.search) || "").get("debug") === "1";
+      const debug = new URLSearchParams(globalThis.location?.search || "").get("debug") === "1";
       this.performance = new PerformanceMonitor(this.root, debug);
       this.world.addChild(this.buildGuide);
       this.pauseUI = new PauseOverlay(
@@ -3884,7 +3883,6 @@ var MarsEntry = (() => {
       );
       this.bindInput();
       this.unbindVisibility = PlatformManager.current.onVisibilityChange((visible) => {
-        var _a2, _b;
         this.suspended = !visible;
         this.skipResumeDelta = visible;
         this.elapsedAccumulatorMs = 0;
@@ -3895,8 +3893,8 @@ var MarsEntry = (() => {
         this.buildDragging = false;
         this.controlDragging = false;
         this.lastControlInput = 0;
-        (_a2 = this.flight) == null ? void 0 : _a2.setInput(0);
-        (_b = this.astronaut) == null ? void 0 : _b.setInput(0);
+        this.flight?.setInput(0);
+        this.astronaut?.setInput(0);
       });
       this.showHome();
       Laya.timer.frameLoop(
@@ -3906,28 +3904,26 @@ var MarsEntry = (() => {
       );
     }
     dispose() {
-      var _a, _b, _c, _d;
-      (_a = this.unbindVisibility) == null ? void 0 : _a.call(this);
+      this.unbindVisibility?.();
       this.unbindVisibility = null;
       Laya.stage.offAllCaller(this);
       Laya.timer.clearAll(this);
-      (_b = this.flight) == null ? void 0 : _b.stop();
+      this.flight?.stop();
       this.obstacleManager.setMode(null);
       this.pickupManager.setMode(null);
       this.routes.setMode(null);
-      (_c = this.astronaut) == null ? void 0 : _c.destroy();
-      (_d = this.assembly) == null ? void 0 : _d.unlockStructure();
+      this.astronaut?.destroy();
+      this.assembly?.unlockStructure();
       this.root.destroy(true);
     }
     drawBackground() {
-      var _a;
       const w = Laya.stage.width;
       const h = Laya.stage.height;
       this.root.graphics.clear();
       this.root.size(w, h);
       this.world.size(w, h);
       this.root.graphics.drawRect(0, 0, w, h, "#081426");
-      (_a = this.buildBackdrop) == null ? void 0 : _a.destroy(true);
+      this.buildBackdrop?.destroy(true);
       this.buildBackdrop = MissionUi.background(this.root, "hangar");
     }
     createPlatform() {
@@ -3948,10 +3944,16 @@ var MarsEntry = (() => {
         -GameConfig.platformHeight / 2,
         GameConfig.platformWidth,
         GameConfig.platformHeight,
-        "#16243B",
-        "#F8C96A",
-        3
+        "#23374D",
+        "#83C8E7",
+        2
       );
+      const deckWidth = GameConfig.platformWidth, deckHeight = GameConfig.platformHeight;
+      platform.graphics.drawRect(-deckWidth / 2 + 3, -deckHeight / 2 + 3, deckWidth - 6, 7, "#A7BACA");
+      platform.graphics.drawLine(-deckWidth / 2, -deckHeight / 2, deckWidth / 2, -deckHeight / 2, "#FFE4A3", 4);
+      for (let x = -deckWidth / 2 + 22; x < deckWidth / 2 - 12; x += 54) {
+        platform.graphics.drawLine(x, deckHeight / 2 - 5, x + 24, deckHeight / 2 - 5, "#55CFFD", 3);
+      }
       this.world.addChild(
         platform
       );
@@ -3984,7 +3986,6 @@ var MarsEntry = (() => {
       this.platformCollider = null;
     }
     setUserPaused(value) {
-      var _a, _b;
       if (this.userPaused === value) return;
       this.userPaused = value;
       this.elapsedAccumulatorMs = 0;
@@ -3993,15 +3994,14 @@ var MarsEntry = (() => {
       this.buildDragging = false;
       this.controlDragging = false;
       this.lastControlInput = 0;
-      (_a = this.flight) == null ? void 0 : _a.setInput(0);
-      (_b = this.astronaut) == null ? void 0 : _b.setInput(0);
+      this.flight?.setInput(0);
+      this.astronaut?.setInput(0);
       this.pauseUI.setPaused(value);
       if (value) GameAudio.suspend();
       else GameAudio.unlock();
     }
     pointerOnPauseButton() {
-      var _a;
-      return !!((_a = this.pauseUI) == null ? void 0 : _a.isActive) && !this.userPaused && Laya.stage.mouseY <= 85 && Laya.stage.mouseX >= Laya.stage.width - 155;
+      return !!this.pauseUI?.isActive && !this.userPaused && Laya.stage.mouseY <= 85 && Laya.stage.mouseX >= Laya.stage.width - 155;
     }
     bindInput() {
       Laya.stage.on(
@@ -4085,7 +4085,6 @@ var MarsEntry = (() => {
       }
     }
     onPointerUp() {
-      var _a, _b;
       if (this.userPaused) return;
       this.pointerHeld = false;
       this.lastControlInput = 0;
@@ -4099,8 +4098,8 @@ var MarsEntry = (() => {
       if (this.controlDragging) {
         this.controlDragging = false;
         this.lastControlInput = 0;
-        (_a = this.flight) == null ? void 0 : _a.setInput(0);
-        (_b = this.astronaut) == null ? void 0 : _b.setInput(0);
+        this.flight?.setInput(0);
+        this.astronaut?.setInput(0);
       }
     }
     moveCurrentToPointer() {
@@ -4119,10 +4118,9 @@ var MarsEntry = (() => {
       );
     }
     update() {
-      var _a, _b;
       const delta = Math.min(2e3, Math.max(0, Laya.timer.delta || 16.67));
       let steps = 0;
-      (_a = this.pauseUI) == null ? void 0 : _a.setActive(!this.isIdlePhase() && !this.suspended);
+      this.pauseUI?.setActive(!this.isIdlePhase() && !this.suspended);
       if (this.userPaused) return;
       if (!this.suspended && !this.isIdlePhase()) {
         if (this.skipResumeDelta) this.skipResumeDelta = false;
@@ -4147,19 +4145,18 @@ var MarsEntry = (() => {
       }
       if (!this.suspended && this.performance.enabled) this.performance.record(delta, steps, {
         worldNodes: this.world.numChildren,
-        bodies: ((_b = Laya.Physics2D.I._rigiBodyList) == null ? void 0 : _b.length) || 0,
+        bodies: Laya.Physics2D.I._rigiBodyList?.length || 0,
         obstacles: this.obstacleManager.activeCount,
         pickups: this.pickupManager.activeCount,
         phase: this.phase
       });
     }
     updateSimulation(dt) {
-      var _a, _b, _c, _d;
       this.hud.update(dt);
       this.feedback.update(dt);
       this.animationMs += dt;
       const stage = this.phase === "stage1_flight" /* Stage1Flight */ ? 1 : this.phase === "stage2_flight" /* Stage2Flight */ ? 2 : 0;
-      (_a = this.assembly) == null ? void 0 : _a.setEngineEffect(stage, 0.9 + Math.sin(this.animationMs / 80) * 0.14);
+      this.assembly?.setEngineEffect(stage, 0.9 + Math.sin(this.animationMs / 80) * 0.14);
       this.updateBuildGuide();
       this.reclaimDebris();
       if (this.damageCooldownMs > 0) {
@@ -4187,16 +4184,15 @@ var MarsEntry = (() => {
         return;
       }
       if (this.isFlightRuntimePhase()) {
-        (_b = this.flight) == null ? void 0 : _b.update(dt);
+        this.flight?.update(dt);
         return;
       }
       if (this.phase === "astronaut_flight" /* AstronautFlight */) {
-        (_c = this.astronaut) == null ? void 0 : _c.setDamageFlash(this.damageCooldownMs > 0 && Math.floor(this.damageCooldownMs / 90) % 2 === 0);
-        (_d = this.astronaut) == null ? void 0 : _d.update(dt);
+        this.astronaut?.setDamageFlash(this.damageCooldownMs > 0 && Math.floor(this.damageCooldownMs / 90) % 2 === 0);
+        this.astronaut?.update(dt);
       }
     }
     updateRunAltitude(dt) {
-      var _a;
       if (!this.runStats) {
         return;
       }
@@ -4221,7 +4217,7 @@ var MarsEntry = (() => {
       if (milestone > this.milestone) {
         this.milestone = milestone;
         this.hud.showMilestone(milestone * GameConfig.milestoneStepMeters);
-        (_a = this.feedback) == null ? void 0 : _a.burst(Laya.stage.width / 2, 350, "#FFD58A", "major");
+        this.feedback?.burst(Laya.stage.width / 2, 350, "#FFD58A", "major");
         GameAudio.play("record");
       }
       this.hudElapsedMs += dt;
@@ -4231,7 +4227,6 @@ var MarsEntry = (() => {
       }
     }
     updateBuilding(dt) {
-      var _a;
       if (this.detectCollapse()) {
         this.failBuild();
         return;
@@ -4247,7 +4242,7 @@ var MarsEntry = (() => {
       }
       this.current.settled = true;
       const below = this.modules[this.modules.length - 2];
-      const offset = Math.abs(this.current.node.x - ((_a = below == null ? void 0 : below.node.x) != null ? _a : this.platformNode.x));
+      const offset = Math.abs(this.current.node.x - (below?.node.x ?? this.platformNode.x));
       this.hud.showPlacement(offset);
       GameAudio.play("land");
       if (Math.abs(
@@ -4400,7 +4395,6 @@ var MarsEntry = (() => {
       );
     }
     launchRocket() {
-      var _a, _b, _c, _d, _e;
       if (this.phase !== "launch_ready" /* LaunchReady */ || !this.assembly || !this.buildMetrics || !this.runStats) {
         return;
       }
@@ -4413,10 +4407,10 @@ var MarsEntry = (() => {
       this.phase = "launching" /* Launching */;
       GameAudio.play("ignite");
       this.buildGuide.visible = false;
-      const ignitionNode = (_a = this.modules[0]) == null ? void 0 : _a.node;
+      const ignitionNode = this.modules[0]?.node;
       if (ignitionNode) {
-        (_c = (_b = this.feedback) == null ? void 0 : _b.ring) == null ? void 0 : _c.call(_b, ignitionNode.x, ignitionNode.y, "#FFBD6B");
-        (_e = (_d = this.feedback) == null ? void 0 : _d.show) == null ? void 0 : _e.call(_d, Laya.stage.width / 2, 475, "\u70B9\u706B\u6210\u529F\uFF01", "#FFE2A3", "major");
+        this.feedback?.ring?.(ignitionNode.x, ignitionNode.y, "#FFBD6B");
+        this.feedback?.show?.(Laya.stage.width / 2, 475, "\u70B9\u706B\u6210\u529F\uFF01", "#FFE2A3", "major");
       }
       this.backdrop.setVisible(true);
       if (this.buildBackdrop) this.buildBackdrop.visible = false;
@@ -4441,7 +4435,6 @@ var MarsEntry = (() => {
         GameConfig.launchDelayMs,
         this,
         () => {
-          var _a2;
           if (this.phase !== "launching" /* Launching */ || !this.assembly || !this.buildMetrics || !this.runStats) {
             return;
           }
@@ -4470,7 +4463,7 @@ var MarsEntry = (() => {
           this.flight.start();
           this.obstacleManager.setMode("stage1");
           this.pickupManager.setMode("stage1");
-          const e2e = (_a2 = globalThis.location) == null ? void 0 : _a2.search.includes("e2e");
+          const e2e = globalThis.location?.search.includes("e2e");
           this.routes.setSeed(e2e ? 2447445413 : Math.floor(Math.random() * 4294967296));
           this.routes.setMode("stage1");
         }
@@ -4490,15 +4483,14 @@ var MarsEntry = (() => {
       );
     }
     onStageSeparation() {
-      var _a, _b, _c, _d, _e, _f;
       this.phase = "stage_separation" /* StageSeparation */;
       GameAudio.play("separate");
-      const joint = (_a = this.modules[2]) == null ? void 0 : _a.node;
+      const joint = this.modules[2]?.node;
       if (joint) {
-        (_c = (_b = this.feedback) == null ? void 0 : _b.ring) == null ? void 0 : _c.call(_b, joint.x, joint.y, "#8EDAFF");
-        (_e = (_d = this.feedback) == null ? void 0 : _d.show) == null ? void 0 : _e.call(_d, Laya.stage.width / 2, 460, "\u4E00\u7EA7\u5206\u79BB\uFF01", "#D0F3FF", "major");
+        this.feedback?.ring?.(joint.x, joint.y, "#8EDAFF");
+        this.feedback?.show?.(Laya.stage.width / 2, 460, "\u4E00\u7EA7\u5206\u79BB\uFF01", "#D0F3FF", "major");
       }
-      (_f = this.flight) == null ? void 0 : _f.setInput(0);
+      this.flight?.setInput(0);
       this.obstacleManager.setMode(null);
       this.pickupManager.setMode(null);
       this.routes.setMode(null);
@@ -4509,13 +4501,12 @@ var MarsEntry = (() => {
       PlatformManager.current.vibrate("heavy");
     }
     onStage2Ignition() {
-      var _a, _b, _c, _d, _e;
       this.phase = "stage2_flight" /* Stage2Flight */;
       GameAudio.play("ignite");
-      const thruster = (_a = this.modules[2]) == null ? void 0 : _a.node;
+      const thruster = this.modules[2]?.node;
       if (thruster) {
-        (_c = (_b = this.feedback) == null ? void 0 : _b.ring) == null ? void 0 : _c.call(_b, thruster.x, thruster.y, "#FFC36F");
-        (_e = (_d = this.feedback) == null ? void 0 : _d.show) == null ? void 0 : _e.call(_d, Laya.stage.width / 2, 470, "\u4E8C\u7EA7\u70B9\u706B\uFF01", "#FFE4B0", "major");
+        this.feedback?.ring?.(thruster.x, thruster.y, "#FFC36F");
+        this.feedback?.show?.(Laya.stage.width / 2, 470, "\u4E8C\u7EA7\u70B9\u706B\uFF01", "#FFE4B0", "major");
       }
       this.buildMetrics = this.assembly.calculateMetrics(this.modules[2].node.x);
       this.resumeHeldControl();
@@ -4529,7 +4520,6 @@ var MarsEntry = (() => {
       PlatformManager.current.vibrate("medium");
     }
     onObstacleHit(hit) {
-      var _a;
       if (hit.target === "rocket") {
         return this.onRocketObstacleHit(hit.targetNodeName);
       }
@@ -4540,7 +4530,7 @@ var MarsEntry = (() => {
           GameConfig.astronautObstacleEnergyDamage
         );
         GameAudio.play("hit");
-        (_a = this.feedback) == null ? void 0 : _a.burst(this.astronaut.node.x, this.astronaut.node.y, "#FFA2A2", "major");
+        this.feedback?.burst(this.astronaut.node.x, this.astronaut.node.y, "#FFA2A2", "major");
         this.hud.setAstronautDamaged();
         PlatformManager.current.vibrate("medium");
         return true;
@@ -4548,7 +4538,6 @@ var MarsEntry = (() => {
       return false;
     }
     onRocketObstacleHit(targetNodeName) {
-      var _a, _b;
       if (!this.isRocketControlPhase() || !this.assembly || !this.flight) {
         return false;
       }
@@ -4566,8 +4555,8 @@ var MarsEntry = (() => {
         this.rocketHp - 1
       );
       GameAudio.play("hit");
-      const impactNode = (_a = this.modules.find((m) => m.node.name === targetNodeName)) == null ? void 0 : _a.node;
-      if (impactNode) (_b = this.feedback) == null ? void 0 : _b.burst(impactNode.x, impactNode.y, "#FF9C88", "major");
+      const impactNode = this.modules.find((m) => m.node.name === targetNodeName)?.node;
+      if (impactNode) this.feedback?.burst(impactNode.x, impactNode.y, "#FF9C88", "major");
       this.hud.setRocketDamaged(
         this.rocketHp,
         GameConfig.rocketMaxHp
@@ -4621,19 +4610,18 @@ var MarsEntry = (() => {
       return false;
     }
     beginEscape(reason, motion) {
-      var _a, _b, _c, _d, _e, _f, _g;
       if (!this.assembly || this.phase === "escape" /* Escape */ || this.phase === "astronaut_flight" /* AstronautFlight */ || this.phase === "result" /* Result */) {
         return;
       }
       this.phase = "escape" /* Escape */;
-      (_a = this.flight) == null ? void 0 : _a.setInput(0);
+      this.flight?.setInput(0);
       this.obstacleManager.setMode(null);
       this.pickupManager.setMode(null);
       this.routes.setMode(null);
       const spawn = this.assembly.getEscapeSpawnPoint();
-      (_c = (_b = this.feedback) == null ? void 0 : _b.ring) == null ? void 0 : _c.call(_b, spawn.x, spawn.y, "#B9EFFF");
-      (_e = (_d = this.feedback) == null ? void 0 : _d.show) == null ? void 0 : _e.call(_d, Laya.stage.width / 2, 465, "\u7D27\u6025\u5F39\u5C04\uFF01", "#CBF6FF", "major");
-      const drift = (_g = (_f = this.buildMetrics) == null ? void 0 : _f.drift) != null ? _g : 0;
+      this.feedback?.ring?.(spawn.x, spawn.y, "#B9EFFF");
+      this.feedback?.show?.(Laya.stage.width / 2, 465, "\u7D27\u6025\u5F39\u5C04\uFF01", "#CBF6FF", "major");
+      const drift = this.buildMetrics?.drift ?? 0;
       this.assembly.releaseActiveAsWreck(
         motion.horizontalVelocity,
         motion.verticalVelocity,
@@ -4657,7 +4645,6 @@ var MarsEntry = (() => {
       );
     }
     startAstronaut(spawn) {
-      var _a, _b;
       if (!this.runStats) {
         return;
       }
@@ -4678,20 +4665,19 @@ var MarsEntry = (() => {
         }
       );
       this.astronaut.start();
-      (_b = (_a = this.feedback) == null ? void 0 : _a.ring) == null ? void 0 : _b.call(_a, this.astronaut.node.x, this.astronaut.node.y, "#79D9FF");
+      this.feedback?.ring?.(this.astronaut.node.x, this.astronaut.node.y, "#79D9FF");
       this.resumeHeldControl();
       this.obstacleManager.setMode("astronaut");
       this.pickupManager.setMode("astronaut");
       this.routes.setMode("astronaut");
     }
     resumeHeldControl() {
-      var _a, _b;
       this.controlDragging = this.pointerHeld;
       const input = this.pointerHeld ? this.lastControlInput : 0;
       const distance = this.phase === "astronaut_flight" /* AstronautFlight */ ? GameConfig.astronautControlDragDistance : GameConfig.flightControlDragDistance;
       this.controlPointerStartX = Laya.stage.mouseX - input * distance;
-      if (this.phase === "astronaut_flight" /* AstronautFlight */) (_a = this.astronaut) == null ? void 0 : _a.setInput(input);
-      else (_b = this.flight) == null ? void 0 : _b.setInput(input);
+      if (this.phase === "astronaut_flight" /* AstronautFlight */) this.astronaut?.setInput(input);
+      else this.flight?.setInput(input);
     }
     completeRun() {
       if (this.phase !== "astronaut_flight" /* AstronautFlight */) {
@@ -4769,12 +4755,11 @@ var MarsEntry = (() => {
       );
     }
     resetBuild() {
-      var _a, _b, _c, _d, _e;
       this.feedback.clear();
       this.milestone = 0;
       this.animationMs = 0;
       this.destroyActionButton();
-      (_a = this.homePanel) == null ? void 0 : _a.hide();
+      this.homePanel?.hide();
       this.hud.setVisible(true);
       this.world.visible = true;
       this.backdrop.setVisible(false);
@@ -4782,15 +4767,15 @@ var MarsEntry = (() => {
       if (this.platformNode) {
         this.platformNode.visible = true;
       }
-      (_b = this.upgradePanel) == null ? void 0 : _b.hide();
+      this.upgradePanel?.hide();
       this.obstacleManager.setMode(null);
       this.pickupManager.setMode(null);
       this.routes.setMode(null);
-      (_c = this.flight) == null ? void 0 : _c.stop();
+      this.flight?.stop();
       this.flight = null;
-      (_d = this.astronaut) == null ? void 0 : _d.destroy();
+      this.astronaut?.destroy();
       this.astronaut = null;
-      (_e = this.assembly) == null ? void 0 : _e.unlockStructure();
+      this.assembly?.unlockStructure();
       this.assembly = null;
       this.buildMetrics = null;
       this.runStats = null;
@@ -4838,10 +4823,9 @@ var MarsEntry = (() => {
       );
     }
     showHome(startInUpgrade = false) {
-      var _a;
       this.phase = "home" /* Home */;
       this.destroyActionButton();
-      (_a = this.upgradePanel) == null ? void 0 : _a.hide();
+      this.upgradePanel?.hide();
       this.hud.setVisible(false);
       this.world.visible = false;
       this.backdrop.setVisible(false);
@@ -4878,12 +4862,11 @@ var MarsEntry = (() => {
       this.showHome(true);
     }
     updateBuildGuide() {
-      var _a;
       const visible = this.phase === "building" /* Building */ && !!this.current && !this.current.released;
       this.buildGuide.visible = visible;
       if (!visible) return;
       const below = this.modules[this.modules.length - 2];
-      const x = (_a = below == null ? void 0 : below.node.x) != null ? _a : this.platformNode.x;
+      const x = below?.node.x ?? this.platformNode.x;
       const top = this.getStackTopY();
       const key = `${x.toFixed(1)}:${top.toFixed(1)}:${this.current.node.x.toFixed(1)}:${this.current.definition.width}`;
       if (key === this.guideKey) return;
@@ -4909,17 +4892,15 @@ var MarsEntry = (() => {
       }
     }
     pickupFeedback(hit) {
-      var _a;
       const module = this.modules.find((m) => m.node.name === hit.targetNodeName);
-      const node = hit.target === "astronaut" ? (_a = this.astronaut) == null ? void 0 : _a.node : module == null ? void 0 : module.node;
+      const node = hit.target === "astronaut" ? this.astronaut?.node : module?.node;
       const labels = { fuel: "\u71C3\u6599 +6\u79D2", metal: "\u91D1\u5C5E +1", chip: "\u82AF\u7247 +1", suit_energy: "\u80FD\u6E90 +5\u79D2" };
       const label = hit.type === "fuel" && this.phase === "stage2_flight" /* Stage2Flight */ ? "\u71C3\u6599 +4\u79D2" : labels[hit.type];
       if (node) this.feedback.show(node.x, node.y - 65, label, hit.type === "chip" ? "#DBC9FF" : "#C7F3DE");
       GameAudio.play("pickup");
     }
     getBackdropScrollSpeed() {
-      var _a, _b, _c, _d;
-      const multiplier = this.phase === "stage1_flight" /* Stage1Flight */ ? (_b = (_a = this.runStats) == null ? void 0 : _a.stage1EngineMultiplier) != null ? _b : 1 : this.phase === "stage2_flight" /* Stage2Flight */ ? (_d = (_c = this.runStats) == null ? void 0 : _c.stage2EngineMultiplier) != null ? _d : 1 : 1;
+      const multiplier = this.phase === "stage1_flight" /* Stage1Flight */ ? this.runStats?.stage1EngineMultiplier ?? 1 : this.phase === "stage2_flight" /* Stage2Flight */ ? this.runStats?.stage2EngineMultiplier ?? 1 : 1;
       if (this.phase === "stage1_flight" /* Stage1Flight */) {
         return 72 * multiplier;
       }
@@ -5010,7 +4991,6 @@ var MarsEntry = (() => {
       );
     }
     onResize() {
-      var _a;
       if (!this.hud) return;
       this.drawBackground();
       this.backdrop.resize();
@@ -5029,7 +5009,7 @@ var MarsEntry = (() => {
         }
       }
       this.hud.layout();
-      (_a = this.pauseUI) == null ? void 0 : _a.layout();
+      this.pauseUI?.layout();
       if (this.phase === "result" /* Result */) this.showResultPanel();
       if (this.actionButton) {
         this.actionButton.pos(Laya.stage.width / 2, Laya.stage.height - 64);
@@ -5037,18 +5017,18 @@ var MarsEntry = (() => {
     }
   };
 
-  // assets/scripts/Entry.ts
+  // dengluhuoxing/assets/scripts/Entry.ts
   Laya.addBeforeInitCallback(() => {
     Laya.Physics2DOption.customUpdate = true;
+    Laya.Config.isAntialias = false;
     if (globalThis.location && new URLSearchParams(location.search).get("quality") === "low") {
       Laya.Config.useRetinalCanvas = false;
     }
   });
   async function main() {
-    var _a;
     Laya.stage.bgColor = "#081426";
     const isTouchMiniGame = !!globalThis.wx || !!globalThis.tt;
-    const mobileUA = /Android|iPhone|iPad|iPod|Mobile/i.test(((_a = globalThis.navigator) == null ? void 0 : _a.userAgent) || "");
+    const mobileUA = /Android|iPhone|iPad|iPod|Mobile/i.test(globalThis.navigator?.userAgent || "");
     let lastLayout = "";
     const syncOrientation = () => {
       const desktopLandscape = !isTouchMiniGame && !mobileUA && globalThis.innerWidth > globalThis.innerHeight;

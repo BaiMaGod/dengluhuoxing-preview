@@ -76,9 +76,9 @@ try {
   await page.goto(`${base}/?e2e=1&debug=1`, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => globalThis.__MARS_GAME__?.phase === 'home', null, { timeout: 15000 });
   await page.screenshot({ path: 'artifacts/home.png' });
-  const artResponse = await page.request.get(`${base}/art/mars_home.png`);
+  const artResponse = await page.request.get(`${base}/art/mission/home.jpg`);
   assert.equal(artResponse.status(), 200, 'Illustrated background must be in published Web bundle');
-  const flightArt = await page.request.get(`${base}/art/mars_flight.png`);
+  const flightArt = await page.request.get(`${base}/art/mission/flight.jpg`);
   assert.equal(flightArt.status(), 200, 'Illustrated flight sky must be bundled');
   report.push({ check:'mission and flight illustrations bundled and fetchable' });
   await page.setViewportSize({ width: 1280, height: 800 });

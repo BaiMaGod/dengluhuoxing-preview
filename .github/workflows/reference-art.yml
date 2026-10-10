@@ -22,6 +22,17 @@ jobs:
           npm install --no-save --ignore-scripts playwright-core@1.55.0 > /dev/null
           sudo apt-get update -qq
           sudo apt-get install -y -qq fonts-noto-cjk
+      - name: Verify every reference art asset before opening the game
+        run: |
+          python3 - <<'PY'
+          import json,hashlib,pathlib
+          root=pathlib.Path('art/mission')
+          for asset in json.loads((root/'manifest.json').read_text())['assets']:
+            data=(root/asset['file']).read_bytes()
+            assert len(data)==asset['bytes'], asset['file']
+            assert hashlib.sha256(data).hexdigest()==asset['sha256'], asset['file']
+          print('All reference art assets match their source hashes')
+          PY
       - name: Serve full current-source development build
         run: |
           mkdir -p artifacts
@@ -34,10 +45,24 @@ jobs:
           export SMOKE_URL=http://127.0.0.1:4173
           node .github/scripts/art-visual.mjs
       - name: Full gameplay lifecycle regression
+        if: always()
         run: |
           export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
           export SMOKE_URL=http://127.0.0.1:4173
           node .github/scripts/gameplay-smoke.mjs
+      - name: Read previous published package for frame comparison
+        if: always()
+        uses: actions/checkout@v4
+        with:
+          ref: 44cacf6eb13b6d9725a0b34300c3285df20085dd
+          path: baseline
+          persist-credentials: false
+      - name: Measure previous package on the same two DPR2 profiles
+        if: always()
+        run: |
+          python3 -m http.server 4175 --bind 127.0.0.1 --directory baseline > /tmp/mars-baseline-http.log 2>&1 &
+          export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
+          node .github/scripts/frame-baseline.mjs
       - name: Review screenshots
         if: always()
         uses: actions/upload-artifact@v4

@@ -1,6 +1,6 @@
 {
   "source": "Built-in ImageGen based on user-approved two Mars reference sheets, 2026-10-10",
-  "preparation": "Explicit sprite bounds, alpha trim, cover-cropped backgrounds, JPEG quality 91, transparent logo proportion preserved",
+  "preparation": "Explicit sprite bounds, alpha trim, cover-cropped backgrounds, JPEG quality 91, transparent logo proportion preserved; logo PNG palette optimization preserves 900×670 dimensions",
   "assets": [
     {
       "file": "asteroid.png",
@@ -90,8 +90,8 @@
       "file": "logo.png",
       "width": 900,
       "height": 670,
-      "bytes": 1055375,
-      "sha256": "8e0be0bd726cc0280c5e2b64db91cf74afdd3832cc3caf9ebe9d1dc1b64fea7d"
+      "bytes": 205681,
+      "sha256": "cd18089c462e44b9f4be9856a4d567daa78401ad957561f292f136ceeb8d5c9a"
     },
     {
       "file": "metal.png",
