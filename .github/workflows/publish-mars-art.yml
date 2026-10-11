@@ -1,0 +1,137 @@
+name: Publish verified Mars artwork
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/publish-mars-art.yml', '.github/scripts/verify-web.mjs', '.github/scripts/live-release.mjs']
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: mars-verified-production-release
+  cancel-in-progress: false
+env:
+  SOURCE_SHA: 56ccffadc845ba56217b4f26f97a0ac34aee504b
+  VERIFIED_RUN: '38118548025'
+  VERIFIED_HEAD: 4ff3a0d07e64d3078ab4b2d564df22f359bdd8d0
+  VERIFIED_ARTIFACT: '11694298667'
+  VERIFIED_DIGEST: 'sha256:429b29c9a09b0d79dae1ff72195a015e5e86879475c9fe64d69f658ccc3bd7f2'
+jobs:
+  validate:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Require the approved successful official build and exact artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY'
+          import json,os,urllib.request
+          root='https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']
+          def get(path):
+              req=urllib.request.Request(root+path,headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json'})
+              return json.load(urllib.request.urlopen(req))
+          run=get('/actions/runs/'+os.environ['VERIFIED_RUN'])
+          assert run['status']=='completed' and run['conclusion']=='success'
+          assert run['head_sha']==os.environ['VERIFIED_HEAD']
+          assert run['head_branch']=='art-v6-official'
+          jobs=get('/actions/runs/'+os.environ['VERIFIED_RUN']+'/jobs')['jobs']
+          job=next(j for j in jobs if j['name']=='official-build')
+          assert job['conclusion']=='success'
+          for name in ['Real type check and rule regression','Official full Web build','Official package visual and complete gameplay tests','Record exact verified package']:
+              assert next(s for s in job['steps'] if s['name']==name)['conclusion']=='success'
+          a=get('/actions/artifacts/'+os.environ['VERIFIED_ARTIFACT'])
+          assert not a['expired'] and a['name']=='mars-v6-official-web'
+          assert a['workflow_run']['id']==int(os.environ['VERIFIED_RUN'])
+          assert a['digest']==os.environ['VERIFIED_DIGEST']
+          print('Approved full official build and exact Web artifact verified')
+          PY
+      - name: Download the immutable tested Web artifact
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ env.VERIFIED_ARTIFACT }}
+          path: web
+          merge-multiple: true
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ env.VERIFIED_RUN }}
+      - name: Independently verify every final file hash and private-file exclusions
+        run: node .github/scripts/verify-web.mjs web
+      - name: Browser and Chinese font dependencies
+        run: |
+          npm install --no-save --ignore-scripts playwright-core@1.55.0 > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk
+      - name: Test the production hostname behavior before publishing
+        run: |
+          python3 -m http.server 4175 --bind 127.0.0.2 --directory web > /tmp/mars-release-http.log 2>&1 &
+          for n in $(seq 1 20); do if curl --noproxy '*' -fsS http://127.0.0.2:4175/index.html > /dev/null; then break; fi; sleep 1; done
+          export PREVIEW_URL=http://127.0.0.2:4175/
+          export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
+          node .github/scripts/live-release.mjs
+      - name: Production behavior screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mars-production-preflight
+          path: live-qa/
+      - name: Upload the unchanged verified files for manual publication
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/
+  publish:
+    if: github.event_name == 'workflow_dispatch'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Read existing GitHub Pages configuration
+        uses: actions/configure-pages@v5
+      - name: Publish only the accepted official artifact
+        id: deploy
+        uses: actions/deploy-pages@v4
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ env.VERIFIED_ARTIFACT }}
+          path: web
+          merge-multiple: true
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ env.VERIFIED_RUN }}
+      - name: Check the actual Pages files and real mobile gameplay
+        env:
+          PREVIEW_URL: ${{ steps.deploy.outputs.page_url }}
+        run: |
+          npm install --no-save --ignore-scripts playwright-core@1.55.0 > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk
+          export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
+          node .github/scripts/live-release.mjs
+      - name: Actual live-site acceptance screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mars-live-release
+          path: live-qa/
