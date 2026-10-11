@@ -1,8 +1,8 @@
 name: Mars reference artwork review and official build
 on:
   push:
-    branches: [art-v6-review]
-    paths: ['js/bundle.js', 'index.html', 'art/**', '.github/scripts/art-visual.mjs', '.github/scripts/gameplay-smoke.mjs', 'source-ref.json']
+    branches: [art-v6-review, art-v6-official]
+    paths: ['js/bundle.js', 'index.html', 'art/**', '.github/scripts/art-visual.mjs', '.github/scripts/gameplay-smoke.mjs', 'source-ref.json', '.github/workflows/reference-art.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -11,6 +11,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   visual-review:
+    if: github.ref == 'refs/heads/art-v6-review'
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -112,6 +113,14 @@ jobs:
           index="$(find "$PWD/build/web" -maxdepth 5 -name index.html -type f | head -1)"
           test -n "$index"
           echo "WEB_ROOT=$(dirname "$index")" >> "$GITHUB_ENV"
+          python3 - "$index" <<'PY'
+          import pathlib,sys
+          page=pathlib.Path(sys.argv[1])
+          assert (page.parent/'art/mission/astronaut.png').is_file()
+          html=page.read_text()
+          assert '<head>' in html
+          page.write_text(html.replace('<head>','<head>\\n    <link rel="icon" type="image/png" href="art/mission/astronaut.png">',1))
+          PY
       - name: Serve actual official package
         run: |
           python3 -m http.server 4174 --bind 127.0.0.1 --directory "$WEB_ROOT" > /tmp/mars-official-http.log 2>&1 &
