@@ -1763,15 +1763,19 @@ var __MARS_ENTRY__ = (() => {
         panel.addChild(module);
         y += h - 1;
       }
+      const recordY = height * 0.36;
+      const mascotHeight = Math.min(340, resourceY - (recordY + 142) - 24);
+      const mascotWidth = mascotHeight * 270 / 340;
       const mascot = new Laya.Sprite();
       mascot.name = "home_astronaut_mascot";
       mascot.mouseEnabled = false;
-      GameplayArt.astronaut(mascot.graphics, 270, 340);
-      mascot.pos(width * 0.38, resourceY - 350);
+      mascot.size(mascotWidth, mascotHeight);
+      GameplayArt.astronaut(mascot.graphics, mascotWidth, mascotHeight);
+      mascot.pos(width * 0.38 + 135 - mascotWidth / 2, resourceY - mascotHeight - 10);
       panel.addChild(mascot);
       const record = new Laya.Sprite();
       record.name = "home_stats_backdrop";
-      record.size(284, 142).pos(width - 325, height * 0.36);
+      record.size(284, 142).pos(width - 325, recordY);
       record.mouseEnabled = false;
       MissionUi.panel(record.graphics, 284, 142);
       panel.addChild(record);

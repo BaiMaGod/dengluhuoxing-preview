@@ -37,6 +37,15 @@ for(const profile of [
    gpu:(()=>{const c=document.querySelector('canvas');const gl=c?.getContext('webgl2')||c?.getContext('webgl');if(!gl)return null;const ext=gl.getExtension('WEBGL_debug_renderer_info');return ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER);})()
   })));
   assert.ok(Object.values(assets.textures).every(t=>t.width>0&&t.height>0&&!t.destroyed),'Reference artwork decoded into real Laya textures');
+  const homeLayout=await page.evaluate(()=>{
+    const root=globalThis.__MARS_GAME__.homePanel.container;
+    function find(n,name){if(n.name===name)return n;for(let i=0;i<n.numChildren;i++){const r=find(n.getChildAt(i),name);if(r)return r;}}
+    const record=find(root,'home_stats_backdrop'),mascot=find(root,'home_astronaut_mascot'),resources=find(root,'home_resource_card');
+    return {recordBottom:record.y+record.height,mascotTop:mascot.y,mascotBottom:mascot.y+mascot.height,resourcesTop:resources.y};
+  });
+  assert.ok(homeLayout.recordBottom+10<=homeLayout.mascotTop,'History card leaves the astronaut helmet visible');
+  assert.ok(homeLayout.mascotBottom+10<=homeLayout.resourcesTop,'Astronaut clears the resource card');
+  assets.homeLayout=homeLayout;
   // Inspect the actual downloaded PNG, since a cached placeholder is insufficient.
   assert.equal(await page.evaluate(()=>new Promise(r=>{const i=new Image();i.onload=()=>r(i.naturalWidth);i.onerror=()=>r(0);i.src='art/mission/logo.png';})),900,'Logo PNG is complete and browser-decodable');
   await page.waitForTimeout(250);await snap('home');
