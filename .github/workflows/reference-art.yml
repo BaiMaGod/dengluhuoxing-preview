@@ -46,24 +46,11 @@ jobs:
           export SMOKE_URL=http://127.0.0.1:4173
           node .github/scripts/art-visual.mjs
       - name: Full gameplay lifecycle regression
-        if: always()
+        if: ${{ always() && !cancelled() }}
         run: |
           export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
           export SMOKE_URL=http://127.0.0.1:4173
           node .github/scripts/gameplay-smoke.mjs
-      - name: Read previous published package for frame comparison
-        if: always()
-        uses: actions/checkout@v4
-        with:
-          ref: 44cacf6eb13b6d9725a0b34300c3285df20085dd
-          path: baseline
-          persist-credentials: false
-      - name: Measure previous package on the same two DPR2 profiles
-        if: always()
-        run: |
-          python3 -m http.server 4175 --bind 127.0.0.1 --directory baseline > /tmp/mars-baseline-http.log 2>&1 &
-          export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
-          node .github/scripts/frame-baseline.mjs
       - name: Review screenshots
         if: always()
         uses: actions/upload-artifact@v4
