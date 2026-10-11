@@ -78,7 +78,9 @@ for(const profile of [
   await page.waitForTimeout(450);await session.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await session.detach();
   const after=await page.evaluate(()=>globalThis.__MARS_GAME__.modules[0].node.x);assert.ok(after>before+5,'Actual touch steering moves the rocket');touchSteering={before,after};
   await click('暂停');await snap('flight-pause');await click('继续远征');
-  step='frame sampling';timings=await page.evaluate(()=>new Promise(resolve=>{const a=[];let last=null;function next(now){if(last!==null)a.push(now-last);last=now;if(a.length===120){a.sort((a,b)=>a-b);resolve({p95:a[114],median:a[60],budgetMs:33.4});}else requestAnimationFrame(next);}requestAnimationFrame(next);}));
+  // Subtracting browser timestamps introduces binary floating-point tails.
+  // Normalize to integer nanoseconds; retain the original 33.4ms budget.
+  step='frame sampling';timings=await page.evaluate(()=>new Promise(resolve=>{const a=[];let last=null;function next(now){if(last!==null)a.push(Math.round((now-last)*1e6)/1e6);last=now;if(a.length===120){a.sort((a,b)=>a-b);resolve({p95:a[114],median:a[60],budgetMs:33.4,timingPrecisionNs:1});}else requestAnimationFrame(next);}requestAnimationFrame(next);}));
   if(profile.id==='390')assert.ok(audioEvents.some(e=>e.contextState==='running'),'Native WebAudio context runs after real input');
   assert.deepEqual(errors,[]);report.push({audioEvents,profile,passed:true,performancePassed:timings.p95<=33.4,assets,timings,touchSteering,errors,network});
  }catch(e){await snap('failure');const state=await page.evaluate(()=>{const g=globalThis.__MARS_GAME__;return g&&{phase:g.phase,userPaused:g.userPaused,buildDragging:g.buildDragging,current:g.current&&{released:g.current.released,x:g.current.node.x,y:g.current.node.y},modules:g.modules.map(m=>({x:m.node.x,y:m.node.y,released:m.released,settled:m.settled,rotation:m.body.rotation})),pointer:{x:Laya.stage.mouseX,y:Laya.stage.mouseY}};}).catch(()=>null);report.push({audioEvents,profile,passed:false,performancePassed:false,step,error:e.stack,state,assets,timings,touchSteering,errors,network});}
