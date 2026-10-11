@@ -119,7 +119,7 @@ jobs:
           assert (page.parent/'art/mission/astronaut.png').is_file()
           html=page.read_text()
           assert '<head>' in html
-          page.write_text(html.replace('<head>','<head>\\n    <link rel="icon" type="image/png" href="art/mission/astronaut.png">',1))
+          page.write_text(html.replace('<head>','<head><link rel="icon" type="image/png" href="art/mission/astronaut.png">',1))
           PY
       - name: Serve actual official package
         run: |
