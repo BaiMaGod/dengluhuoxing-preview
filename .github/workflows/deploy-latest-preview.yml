@@ -45,6 +45,26 @@ jobs:
           cp -r js libs art web/
           test ! -d web/assets
           test ! -d web/docs
+      - name: Install mobile browser test runner
+        shell: bash
+        run: npm install --no-save --ignore-scripts playwright-core@1.55.0 > /dev/null
+      - name: Run 390x844 real Chromium render and ascent QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
+          test -n "$CHROME_BIN"
+          export CHROME_BIN
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory web > /tmp/mars-server.log 2>&1 &
+          for i in {1..25}; do if curl -fsS http://127.0.0.1:4173/ >/dev/null; then break; fi; sleep 1; done
+          node .github/scripts/preview-mobile-smoke.mjs
+      - name: Upload real browser QA snapshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mars-preview-mobile-qa
+          path: qa-images/
+          if-no-files-found: warn
       - name: Upload GitHub Pages package
         uses: actions/upload-pages-artifact@v3
         with:
