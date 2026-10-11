@@ -1,0 +1,61 @@
+name: Deploy Mars Preview (public free runner)
+on:
+  push:
+    branches: [main]
+    paths:
+      - "js/bundle.js"
+      - "art/mission/**"
+      - "index.html"
+      - "version.json"
+      - ".github/workflows/deploy-latest-preview.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: mars-preview-live
+  cancel-in-progress: false
+jobs:
+  verify-and-package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify executable Web and all mission art
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check js/bundle.js
+          node --check js/index.js
+          for x in home.jpg hangar.jpg flight.jpg logo.png astronaut.png stage1_engine.png stage1_tank.png stage2_engine.png stage2_tank.png cockpit.png escape.png coin.png metal.png chip.png panel.png; do
+            test -s "art/mission/$x" || { echo "Missing art: $x"; exit 1; }
+          done
+          grep -q 'altitude scenes, accelerating ascent' js/bundle.js || grep -q 'October 11 UI/ascent/atmosphere patch' js/bundle.js
+          node -e 'let v=require("./version.json"); if(!v.previewContainsOct11Changes) process.exit(1)'
+          echo "Verified preview Web package"
+      - name: Prepare public-only site files
+        shell: bash
+        run: |
+          mkdir -p web
+          cp index.html fileconfig.json version.json .nojekyll web/
+          cp -r js libs art web/
+          test ! -d web/assets
+          test ! -d web/docs
+      - name: Upload GitHub Pages package
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: web
+  deploy:
+    needs: verify-and-package
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
