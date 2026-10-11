@@ -198,6 +198,28 @@ try {
   assert.equal(settlement.progress.firstFlightRewardClaimed, true);
   assert.ok(settlement.progress.metal >= 4 && settlement.progress.chips >= 1);
   report.push({ check: 'settlement persisted', ...settlement });
+  await page.setViewportSize({width:375,height:667});
+  await page.waitForTimeout(350);
+  const resultLayout=await page.evaluate(()=>{
+    const root=globalThis.__MARS_GAME__.upgradePanel.container,labels=['科研升级','再来一枚','返回首页'],rects=[];
+    function scan(n){if(!n.visible)return;if(labels.includes(n.text)){
+      const b=n.parent,p=b.localToGlobal(new Laya.Point(0,0));
+      rects.push({label:n.text,x:p.x,y:p.y,w:b.width*b.scaleX,h:b.height*b.scaleY});
+    }for(let i=0;i<n.numChildren;i++)scan(n.getChildAt(i));}scan(root);
+    return {stage:{w:Laya.stage.width,h:Laya.stage.height},rects};
+  });
+  assert.equal(resultLayout.rects.length,3,'All settlement controls are visible on narrow phone');
+  resultLayout.rects.sort((a,b)=>a.y-b.y);
+  for(let i=0;i<resultLayout.rects.length;i++){
+    const r=resultLayout.rects[i];assert.ok(r.x>=0&&r.x+r.w<=resultLayout.stage.w&&r.y>=0&&r.y+r.h<=resultLayout.stage.h,'Settlement control fits the screen: '+r.label);
+    assert.ok(r.h/resultLayout.stage.h*667>=44,'Settlement control retains a 44px touch target: '+r.label);
+    if(i)assert.ok(resultLayout.rects[i-1].y+resultLayout.rects[i-1].h<=r.y,'Settlement controls do not overlap');
+  }
+  report.push({check:'narrow settlement control bounds and touch targets',...resultLayout});
+  await page.screenshot({path:'artifacts/result-narrow.png'});
+  await page.setViewportSize({width:390,height:844});
+  await page.waitForTimeout(350);
+  await clickLabel('科研升级');
   const upgradePoint = await page.evaluate(() => {
     const rows = globalThis.__MARS_GAME__.upgradePanel.container;
     for (let i=0;i<rows.numChildren;i++) {
