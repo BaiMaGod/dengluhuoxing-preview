@@ -12,7 +12,11 @@ for(const profile of [
 ]){
  const view={width:profile.width,height:profile.height};
  const page=await browser.newPage({viewport:view,deviceScaleFactor:2,isMobile:true,hasTouch:true,reducedMotion:profile.reducedMotion||'no-preference'});
- const errors=[],network=[];
+ const errors=[],network=[],audioEvents=[];
+ const audioSession=await page.context().newCDPSession(page);
+ audioSession.on('WebAudio.contextCreated',e=>audioEvents.push({event:'created',...e.context}));
+ audioSession.on('WebAudio.contextChanged',e=>audioEvents.push({event:'changed',...e.context}));
+ await audioSession.send('WebAudio.enable');
  page.on('pageerror',e=>errors.push(e.message));
  page.on('console',m=>{if(m.type()==='error')errors.push({message:m.text(),location:m.location()});});
  page.on('response',r=>{network.push({status:r.status(),url:r.url()});if(r.status()>=400)errors.push(`${r.status()} ${r.url()}`);});
@@ -33,9 +37,26 @@ for(const profile of [
    gpu:(()=>{const c=document.querySelector('canvas');const gl=c?.getContext('webgl2')||c?.getContext('webgl');if(!gl)return null;const ext=gl.getExtension('WEBGL_debug_renderer_info');return ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER);})()
   })));
   assert.ok(Object.values(assets.textures).every(t=>t.width>0&&t.height>0&&!t.destroyed),'Reference artwork decoded into real Laya textures');
+  const homeLayout=await page.evaluate(()=>{
+    const root=globalThis.__MARS_GAME__.homePanel.container;
+    function find(n,name){if(n.name===name)return n;for(let i=0;i<n.numChildren;i++){const r=find(n.getChildAt(i),name);if(r)return r;}}
+    const record=find(root,'home_stats_backdrop'),mascot=find(root,'home_astronaut_mascot'),resources=find(root,'home_resource_card');
+    return {recordBottom:record.y+record.height,mascotTop:mascot.y,mascotBottom:mascot.y+mascot.height,resourcesTop:resources.y};
+  });
+  assert.ok(homeLayout.recordBottom+10<=homeLayout.mascotTop,'History card leaves the astronaut helmet visible');
+  assert.ok(homeLayout.mascotBottom+10<=homeLayout.resourcesTop,'Astronaut clears the resource card');
+  assets.homeLayout=homeLayout;
   // Inspect the actual downloaded PNG, since a cached placeholder is insufficient.
   assert.equal(await page.evaluate(()=>new Promise(r=>{const i=new Image();i.onload=()=>r(i.naturalWidth);i.onerror=()=>r(0);i.src='art/mission/logo.png';})),900,'Logo PNG is complete and browser-decodable');
   await page.waitForTimeout(250);await snap('home');
+  if(profile.id==='390'){
+   step='settings and sound';await click('⚙');await click('关闭音效');
+   assert.equal(await page.evaluate(()=>localStorage.getItem('mars.audio.muted')),'1','Real settings button saves mute preference');
+   await page.reload();await page.waitForFunction(()=>globalThis.__MARS_GAME__?.phase==='home');
+   await click('⚙');await click('打开音效');
+   assert.equal(await page.evaluate(()=>localStorage.getItem('mars.audio.muted')),'0','Real settings button restores sound');
+   await page.waitForFunction(()=>document.visibilityState==='visible');await click('⚙');await snap('settings');await click('返回');
+  }
   step='build start';await click('开始造火箭');await page.waitForFunction(()=>globalThis.__MARS_GAME__.phase==='building');await snap('build-start');
   await click('暂停');await page.waitForFunction(()=>globalThis.__MARS_GAME__.userPaused);
   const y=await page.evaluate(()=>globalThis.__MARS_GAME__.current.node.y);await snap('pause');await page.waitForTimeout(300);
@@ -66,9 +87,12 @@ for(const profile of [
   await page.waitForTimeout(450);await session.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await session.detach();
   const after=await page.evaluate(()=>globalThis.__MARS_GAME__.modules[0].node.x);assert.ok(after>before+5,'Actual touch steering moves the rocket');touchSteering={before,after};
   await click('暂停');await snap('flight-pause');await click('继续远征');
-  step='frame sampling';timings=await page.evaluate(()=>new Promise(resolve=>{const a=[];let last=null;function next(now){if(last!==null)a.push(now-last);last=now;if(a.length===120){a.sort((a,b)=>a-b);resolve({p95:a[114],median:a[60],budgetMs:33.4});}else requestAnimationFrame(next);}requestAnimationFrame(next);}));
-  assert.deepEqual(errors,[]);report.push({profile,passed:true,performancePassed:timings.p95<=33.4,assets,timings,touchSteering,errors,network});
- }catch(e){await snap('failure');const state=await page.evaluate(()=>{const g=globalThis.__MARS_GAME__;return g&&{phase:g.phase,userPaused:g.userPaused,buildDragging:g.buildDragging,current:g.current&&{released:g.current.released,x:g.current.node.x,y:g.current.node.y},modules:g.modules.map(m=>({x:m.node.x,y:m.node.y,released:m.released,settled:m.settled,rotation:m.body.rotation})),pointer:{x:Laya.stage.mouseX,y:Laya.stage.mouseY}};}).catch(()=>null);report.push({profile,passed:false,performancePassed:false,step,error:e.stack,state,assets,timings,touchSteering,errors,network});}
+  // Subtracting browser timestamps introduces binary floating-point tails.
+  // Normalize to integer nanoseconds; retain the original 33.4ms budget.
+  step='frame sampling';timings=await page.evaluate(()=>new Promise(resolve=>{const a=[];let last=null;function next(now){if(last!==null)a.push(Math.round((now-last)*1e6)/1e6);last=now;if(a.length===120){a.sort((a,b)=>a-b);resolve({p95:a[114],median:a[60],budgetMs:33.4,timingPrecisionNs:1});}else requestAnimationFrame(next);}requestAnimationFrame(next);}));
+  if(profile.id==='390')assert.ok(audioEvents.some(e=>e.contextState==='running'),'Native WebAudio context runs after real input');
+  assert.deepEqual(errors,[]);report.push({audioEvents,profile,passed:true,performancePassed:timings.p95<=33.4,assets,timings,touchSteering,errors,network});
+ }catch(e){await snap('failure');const state=await page.evaluate(()=>{const g=globalThis.__MARS_GAME__;return g&&{phase:g.phase,userPaused:g.userPaused,buildDragging:g.buildDragging,current:g.current&&{released:g.current.released,x:g.current.node.x,y:g.current.node.y},modules:g.modules.map(m=>({x:m.node.x,y:m.node.y,released:m.released,settled:m.settled,rotation:m.body.rotation})),pointer:{x:Laya.stage.mouseX,y:Laya.stage.mouseY}};}).catch(()=>null);report.push({audioEvents,profile,passed:false,performancePassed:false,step,error:e.stack,state,assets,timings,touchSteering,errors,network});}
  await page.close();
 }
 const page=await browser.newPage({viewport:{width:1280,height:800}});await page.goto(base+'/?e2e=1');await page.waitForFunction(()=>globalThis.__MARS_GAME__?.phase==='home');await page.waitForTimeout(250);await page.screenshot({path:'artifacts/visual/desktop-home.png'});await page.close();

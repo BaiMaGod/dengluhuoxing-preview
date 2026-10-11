@@ -1,5 +1,5 @@
 {
   "sourceRepository": "BaiMaGod/dengluhuoxing",
-  "sourceCommit": "87a2f1994dc0b32244334a6998fb917c63f78c96",
-  "status": "development visual review candidate; official release gate pending"
+  "sourceCommit": "cf046243cfb242e7795fce0ab533422fba920130",
+  "status": "Full current-source development review; official CLI validation pending"
 }
