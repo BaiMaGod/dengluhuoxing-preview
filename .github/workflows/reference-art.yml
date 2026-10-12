@@ -118,6 +118,8 @@ jobs:
           ./node_modules/.bin/tsc -p tsconfig.json --noEmit
           node .github/scripts/logic-test.mjs
       - name: Official full Web build
+        env:
+          SOURCE_COMMIT: ${{ steps.source.outputs.sha }}
         working-directory: source
         run: |
           mkdir -p artifacts build/web
@@ -126,12 +128,13 @@ jobs:
           test -n "$index"
           echo "WEB_ROOT=$(dirname "$index")" >> "$GITHUB_ENV"
           python3 - "$index" <<'PY'
-          import pathlib,sys
+          import pathlib,sys,json,os
           page=pathlib.Path(sys.argv[1])
           assert (page.parent/'art/mission/astronaut.png').is_file()
           html=page.read_text()
           assert '<head>' in html
           page.write_text(html.replace('<head>','<head><link rel="icon" type="image/png" href="art/mission/astronaut.png">',1))
+          (page.parent/'version.json').write_text(json.dumps({'sourceRepository':'BaiMaGod/dengluhuoxing','sourceCommit':os.environ['SOURCE_COMMIT'],'engine':'LayaAir 3.4.0','officialBuildLatestSource':True,'artRevision':'V7'},indent=2))
           PY
       - name: Serve actual official package
         run: |
