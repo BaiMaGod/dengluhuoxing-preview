@@ -1,81 +1,34 @@
-name: Deploy Mars Preview (public free runner)
+name: Dispatch latest verified Mars release
 on:
-  push:
-    branches: [main]
-    paths:
-      - "js/bundle.js"
-      - "art/mission/**"
-      - "index.html"
-      - "version.json"
-      - ".github/workflows/deploy-latest-preview.yml"
   workflow_dispatch:
 permissions:
   contents: read
-  pages: write
-  id-token: write
-concurrency:
-  group: mars-preview-live
-  cancel-in-progress: false
+  actions: write
 jobs:
-  verify-and-package:
+  request:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
         with:
-          node-version: "22"
-      - name: Verify executable Web and all mission art
-        shell: bash
+          persist-credentials: false
+      - name: Dispatch the authorized immutable Web release
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          set -euo pipefail
-          node --check js/bundle.js
-          node --check js/index.js
-          for x in home.jpg hangar.jpg flight.jpg logo.png astronaut.png stage1_engine.png stage1_tank.png stage2_engine.png stage2_tank.png cockpit.png escape.png coin.png metal.png chip.png panel.png; do
-            test -s "art/mission/$x" || { echo "Missing art: $x"; exit 1; }
-          done
-          grep -q 'altitude scenes, accelerating ascent' js/bundle.js || grep -q 'October 11 UI/ascent/atmosphere patch' js/bundle.js
-          node -e 'let v=require("./version.json"); if(!v.previewContainsOct11Changes) process.exit(1)'
-          echo "Verified preview Web package"
-      - name: Prepare public-only site files
-        shell: bash
-        run: |
-          mkdir -p web
-          cp index.html fileconfig.json version.json .nojekyll web/
-          cp -r js libs art web/
-          test ! -d web/assets
-          test ! -d web/docs
-      - name: Install mobile browser test runner
-        shell: bash
-        run: npm install --no-save --ignore-scripts playwright-core@1.55.0 > /dev/null
-      - name: Run 390x844 real Chromium render and ascent QA
-        shell: bash
-        run: |
-          set -euo pipefail
-          CHROME_BIN="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
-          test -n "$CHROME_BIN"
-          export CHROME_BIN
-          python3 -m http.server 4173 --bind 127.0.0.1 --directory web > /tmp/mars-server.log 2>&1 &
-          for i in {1..25}; do if curl -fsS http://127.0.0.1:4173/ >/dev/null; then break; fi; sleep 1; done
-          node .github/scripts/preview-mobile-smoke.mjs
-      - name: Upload real browser QA snapshots
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: mars-preview-mobile-qa
-          path: qa-images/
-          if-no-files-found: warn
-      - name: Upload GitHub Pages package
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: web
-  deploy:
-    needs: verify-and-package
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          python3 - <<'PY'
+          import json,os,urllib.request
+          request=json.load(open('release-request.json'))
+          root='https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']
+          headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json'}
+          def get(path):return json.load(urllib.request.urlopen(urllib.request.Request(root+path,headers=headers)))
+          run=get('/actions/runs/'+str(request['verifiedRun']))
+          assert run['status']=='completed' and run['conclusion']=='success'
+          assert run['head_sha']==request['verifiedHead']
+          art=get('/actions/artifacts/'+str(request['artifactId']))
+          assert not art['expired'] and art['digest']==request['artifactDigest']
+          assert art['workflow_run']['id']==request['verifiedRun']
+          dispatch=urllib.request.Request(root+'/actions/workflows/publish-mars-art.yml/dispatches',data=json.dumps({'ref':'main'}).encode(),headers=headers,method='POST')
+          with urllib.request.urlopen(dispatch) as response:assert response.status==204
+          print('Requested publication of the exact accepted official Web artifact')
+          PY

@@ -1,10 +1,8 @@
 "use strict";
-var __MARS_ENTRY__ = (() => {
+(() => {
   var __defProp = Object.defineProperty;
   var __defProps = Object.defineProperties;
-  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
   var __getOwnPropDescs = Object.getOwnPropertyDescriptors;
-  var __getOwnPropNames = Object.getOwnPropertyNames;
   var __getOwnPropSymbols = Object.getOwnPropertySymbols;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
   var __propIsEnum = Object.prototype.propertyIsEnumerable;
@@ -21,27 +19,28 @@ var __MARS_ENTRY__ = (() => {
     return a;
   };
   var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
-  var __export = (target, all) => {
-    for (var name in all)
-      __defProp(target, name, { get: all[name], enumerable: true });
+  var __async = (__this, __arguments, generator) => {
+    return new Promise((resolve, reject) => {
+      var fulfilled = (value) => {
+        try {
+          step(generator.next(value));
+        } catch (e) {
+          reject(e);
+        }
+      };
+      var rejected = (value) => {
+        try {
+          step(generator.throw(value));
+        } catch (e) {
+          reject(e);
+        }
+      };
+      var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
+      step((generator = generator.apply(__this, __arguments)).next());
+    });
   };
-  var __copyProps = (to, from, except, desc) => {
-    if (from && typeof from === "object" || typeof from === "function") {
-      for (let key of __getOwnPropNames(from))
-        if (!__hasOwnProp.call(to, key) && key !== except)
-          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-    }
-    return to;
-  };
-  var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-  // source/assets/scripts/Entry.ts
-  var Entry_exports = {};
-  __export(Entry_exports, {
-    main: () => main
-  });
-
-  // source/assets/scripts/platform/PlatformManager.ts
+  // assets/scripts/platform/PlatformManager.ts
   var BrowserPlatform = class {
     constructor() {
       this.name = "web";
@@ -128,7 +127,7 @@ var __MARS_ENTRY__ = (() => {
   };
   PlatformManager._current = null;
 
-  // source/assets/scripts/prototype/PhysicsSimulation.ts
+  // assets/scripts/prototype/PhysicsSimulation.ts
   var configured = false;
   function configurePhysicsCompatibility() {
     const physics = Laya.Physics2D.I;
@@ -212,7 +211,7 @@ var __MARS_ENTRY__ = (() => {
     }
   }
 
-  // source/assets/scripts/config/GameConfig.ts
+  // assets/scripts/config/GameConfig.ts
   var GameConfig = {
     designWidth: 750,
     designHeight: 1334,
@@ -266,7 +265,7 @@ var __MARS_ENTRY__ = (() => {
     suitEnergyPickupRatio: 0.25,
     suitEnergyRestoreSeconds: 5,
     maxBuildFuelPenalty: 0.12,
-    milestoneStepMeters: 500,
+    milestoneStepMeters: 2e3,
     routeWaveMs: 5400,
     routePickupGapMs: 700,
     pickupWeights: {
@@ -274,10 +273,6 @@ var __MARS_ENTRY__ = (() => {
       stage2: { supply: 0.26, metal: 0.44, chip: 0.3 },
       astronaut: { supply: 0.25, metal: 0.35, chip: 0.4 }
     },
-    stage1AltitudeMetersPerSecond: 16,
-    stageSeparationAltitudeMetersPerSecond: 8,
-    stage2AltitudeMetersPerSecond: 20,
-    astronautAltitudeMetersPerSecond: 12,
     escapeTransitionMs: 700,
     // Limit catch-up work to avoid 10+ Box2D substeps after a long frame.
     maxPhysicsSubstepsPerFrame: 5,
@@ -288,12 +283,12 @@ var __MARS_ENTRY__ = (() => {
     astronautControlDragDistance: 110,
     astronautEdgeMargin: 55,
     modules: [
-      { kind: "stage1_engine", label: "\u4E00\u7EA7\u53D1\u52A8\u673A", width: 220, height: 104, color: "#E95D4E", density: 1.25 },
-      { kind: "stage1_tank", label: "\u4E00\u7EA7\u71C3\u6599\u4ED3", width: 190, height: 182, color: "#F0B64D", density: 1.15 },
-      { kind: "stage2_engine", label: "\u4E8C\u7EA7\u53D1\u52A8\u673A", width: 188, height: 92, color: "#4B9BE8", density: 1.1 },
-      { kind: "stage2_tank", label: "\u4E8C\u7EA7\u71C3\u6599\u4ED3", width: 168, height: 160, color: "#52C7B8", density: 1 },
-      { kind: "escape", label: "\u9003\u751F\u8231", width: 142, height: 100, color: "#B68BE8", density: 0.72 },
-      { kind: "cockpit", label: "\u9A7E\u9A76\u8231", width: 126, height: 90, color: "#EDEFF4", density: 0.62 }
+      { kind: "stage1_engine", label: "一级发动机", width: 220, height: 104, color: "#E95D4E", density: 1.25 },
+      { kind: "stage1_tank", label: "一级燃料仓", width: 190, height: 182, color: "#F0B64D", density: 1.15 },
+      { kind: "stage2_engine", label: "二级发动机", width: 188, height: 92, color: "#4B9BE8", density: 1.1 },
+      { kind: "stage2_tank", label: "二级燃料仓", width: 168, height: 160, color: "#52C7B8", density: 1 },
+      { kind: "escape", label: "逃生舱", width: 142, height: 100, color: "#B68BE8", density: 0.72 },
+      { kind: "cockpit", label: "驾驶舱", width: 126, height: 90, color: "#EDEFF4", density: 0.62 }
     ]
   };
   function cappedPhysicsAccumulator(previousMs, frameDeltaMs, stepMs = 1e3 / 60, maxSubsteps = GameConfig.maxPhysicsSubstepsPerFrame) {
@@ -305,14 +300,16 @@ var __MARS_ENTRY__ = (() => {
     );
   }
 
-  // source/assets/scripts/prototype/MissionUi.ts
+  // assets/scripts/prototype/MissionUi.ts
   var _MissionUi = class _MissionUi {
     static texture(name) {
-      return Laya.loader.getRes(`${_MissionUi.prefix}${name}.${["home", "flight", "hangar"].indexOf(name) >= 0 ? "jpg" : "png"}`);
+      return Laya.loader.getRes(
+        _MissionUi.prefix + name + (["home", "flight", "hangar", "launch_earth_v7", "mountains_v7", "cloudsea_v7", "atmosphere_v7"].indexOf(name) >= 0 ? ".jpg" : ".png")
+      );
     }
     static picture(parent, name, x, y, w, h) {
       const node = new Laya.Sprite();
-      node.name = `mission_art_${name}`;
+      node.name = "mission_art_" + name;
       node.mouseEnabled = false;
       node.size(w, h).pos(x, y);
       const texture = this.texture(name);
@@ -326,22 +323,57 @@ var __MARS_ENTRY__ = (() => {
     }
     static background(parent, name) {
       const node = new Laya.Sprite();
-      node.name = `mission_background_${name}`;
+      node.name = "mission_background_" + name;
       node.mouseEnabled = false;
       const w = Laya.stage.width, h = Laya.stage.height;
       const texture = this.texture(name);
       if (texture) {
-        const scale = name === "hangar" ? Math.max(w / texture.width, (h - Math.max(GameConfig.platformBottom, h * 0.09) - GameConfig.platformHeight / 2) / (texture.height * 0.724)) : Math.max(w / texture.width, h / texture.height);
+        const scale = name === "hangar" ? Math.max(
+          w / texture.width,
+          (h - Math.max(GameConfig.platformBottom, h * 0.09) - GameConfig.platformHeight / 2) / (texture.height * 0.724)
+        ) : Math.max(w / texture.width, h / texture.height);
         const top = name === "hangar" ? 0 : (h - texture.height * scale) / 2;
-        node.graphics.drawTexture(texture, (w - texture.width * scale) / 2, top, texture.width * scale, texture.height * scale);
+        node.graphics.drawTexture(
+          texture,
+          (w - texture.width * scale) / 2,
+          top,
+          texture.width * scale,
+          texture.height * scale
+        );
       }
       parent.addChildAt(node, 0);
       return node;
     }
+    static roundedPoints(x, y, w, h, radius) {
+      const r = Math.max(1, Math.min(radius, w / 2, h / 2));
+      const points = [];
+      const corners = [
+        [x + w - r, y + r, -90],
+        [x + w - r, y + h - r, 0],
+        [x + r, y + h - r, 90],
+        [x + r, y + r, 180]
+      ];
+      for (const [cx, cy, start] of corners) {
+        for (let i = 0; i <= 6; i++) {
+          const angle = (start + i * 90 / 6) * Math.PI / 180;
+          points.push(cx + Math.cos(angle) * r, cy + Math.sin(angle) * r);
+        }
+      }
+      return points;
+    }
     static panel(g, w, h) {
-      const texture = this.texture("panel");
-      if (texture) g.draw9Grid(texture, 0, 0, w, h, [42, 42, 42, 42, 0]);
-      else g.drawRect(0, 0, w, h, "#102548", "#65A8E7", 2);
+      g.clear();
+      if (h >= 240 && w >= 300) {
+        const texture = this.texture("panel");
+        if (texture) {
+          g.draw9Grid(texture, 0, 0, w, h, [38, 74, 38, 74, 0]);
+          return;
+        }
+      }
+      const r = Math.min(20, h * 0.16);
+      g.drawPoly(0, 0, this.roundedPoints(0, 3, w, h - 3, r), "#051329", "#2B70A4", 2);
+      g.drawPoly(0, 0, this.roundedPoints(2, 2, w - 4, h - 8, r), "#102D50", "#5688A8", 2);
+      g.drawRect(r + 14, 5, Math.max(0, w - (r + 14) * 2), 2, "#8BC7DE");
     }
     static text(parent, value, x, y, w, h, size, color = "#F4F9FF", bold = false, align = "center") {
       const t = new Laya.Text();
@@ -349,7 +381,7 @@ var __MARS_ENTRY__ = (() => {
       t.color = color;
       t.fontSize = size;
       t.bold = bold;
-      t.font = "Arial";
+      t.font = _MissionUi.font;
       t.align = align;
       t.valign = "middle";
       t.size(w, h).pos(x, y);
@@ -364,29 +396,50 @@ var __MARS_ENTRY__ = (() => {
     static button(value, w, h, gold = false) {
       const node = new Laya.Sprite();
       node.size(w, h);
+      node.name = "ui_button_" + value;
       node.mouseEnabled = true;
+      const face = new Laya.Sprite();
+      face.name = "button_skin";
+      face.mouseEnabled = false;
+      face.size(w, h);
+      node.addChild(face);
       const texture = this.texture(gold ? "button_gold" : "button_blue");
-      if (texture) node.graphics.draw9Grid(texture, 0, 0, w, h, [32, 94, 32, 94, 0]);
-      else node.graphics.drawRect(0, 0, w, h, gold ? "#FFB530" : "#217DD7", "#D6F3FF", 2);
-      const t = this.text(node, value, 10, -2, w - 20, h, Math.min(40, h * 0.37), gold ? "#582406" : "#FFFFFF", true);
-      t.strokeColor = gold ? "#FFEAA1" : "#14416B";
-      node.on(Laya.Event.MOUSE_DOWN, node, () => {
-        node.alpha = 0.85;
-      });
-      node.on(Laya.Event.MOUSE_UP, node, () => {
-        node.alpha = 1;
-      });
-      node.on(Laya.Event.MOUSE_OUT, node, () => {
-        node.alpha = 1;
-      });
+      if (texture) {
+        const scale = (h - 3) / texture.height;
+        face.scale(scale, scale);
+        face.graphics.draw9Grid(texture, 0, 0, w / scale, texture.height, [48, Math.min(112, texture.width * 0.16), 48, Math.min(112, texture.width * 0.16), 0]);
+      } else {
+        face.graphics.drawPoly(0, 0, this.roundedPoints(0, 3, w, h - 3, h * 0.32), gold ? "#75421E" : "#123552");
+        face.graphics.drawPoly(0, 0, this.roundedPoints(0, 0, w, h - 7, h * 0.32), gold ? "#F8BD52" : "#2876AB", gold ? "#FFE9B1" : "#8BD5EA", 2);
+      }
+      const glyphs = Array.from(value).length;
+      const font = Math.max(18, Math.min(w <= 190 ? 28 : 39, Math.floor(h * 0.37), Math.floor((w - 32) / Math.max(1, glyphs))));
+      const label = this.text(node, value, 14, -2, w - 28, h - 4, font, gold ? "#573112" : "#F1FAFF", true);
+      label.name = "button_label";
+      label.strokeColor = gold ? "#FFE8B0" : "#114666";
+      label.stroke = 0.7;
+      const down = () => {
+        face.y = 3;
+        face.alpha = 0.9;
+        label.y = 1;
+      };
+      const up = () => {
+        face.y = 0;
+        face.alpha = 1;
+        label.y = -2;
+      };
+      node.on(Laya.Event.MOUSE_DOWN, node, down);
+      node.on(Laya.Event.MOUSE_UP, node, up);
+      node.on(Laya.Event.MOUSE_OUT, node, up);
       return node;
     }
   };
   _MissionUi.names = ["logo", "button_gold", "button_blue", "panel", "coin", "home", "flight", "hangar"];
   _MissionUi.prefix = "art/mission/";
+  _MissionUi.font = "Microsoft YaHei, Noto Sans CJK SC, PingFang SC, sans-serif";
   var MissionUi = _MissionUi;
 
-  // source/assets/scripts/prototype/GameAudio.ts
+  // assets/scripts/prototype/GameAudio.ts
   var GameAudio = class {
     static get isMuted() {
       if (this.muted === null) this.muted = PlatformManager.current.loadData("mars.audio.muted") === "1";
@@ -486,17 +539,19 @@ var __MARS_ENTRY__ = (() => {
   GameAudio.muted = null;
   GameAudio.lastPlayed = /* @__PURE__ */ new Map();
 
-  // source/assets/scripts/prototype/GameplayArt.ts
+  // assets/scripts/prototype/GameplayArt.ts
   var _GameplayArt = class _GameplayArt {
-    static async preload() {
-      if (!Laya.loader) return;
-      await Promise.all(_GameplayArt.assetUrls.map(async (url) => {
-        try {
-          await Laya.loader.load(url);
-        } catch (error) {
-          console.warn(`[MarsArt] optional asset missing: ${url}`, error);
-        }
-      }));
+    static preload() {
+      return __async(this, null, function* () {
+        if (!Laya.loader) return;
+        yield Promise.all(_GameplayArt.assetUrls.map((url) => __async(null, null, function* () {
+          try {
+            yield Laya.loader.load(url);
+          } catch (error) {
+            throw new Error(`[MarsArt] required artwork could not load: ${url}`);
+          }
+        })));
+      });
     }
     static paint(g, name, width, height) {
       var _a;
@@ -504,11 +559,15 @@ var __MARS_ENTRY__ = (() => {
       if (!texture) return false;
       g.clear();
       if (name === "hud_panel") g.draw9Grid(texture, 0, 0, width, height, [42, 42, 42, 42, 0]);
-      else g.drawTexture(texture, 0, 0, width, height);
+      else {
+        const scale = Math.min(width / texture.width, height / texture.height);
+        const w = texture.width * scale, h = texture.height * scale;
+        g.drawTexture(texture, (width - w) / 2, (height - h) / 2, w, h);
+      }
       return true;
     }
     static module(g, kind, w, h, lucky = false) {
-      if (_GameplayArt.paint(g, kind, w, h)) {
+      if (_GameplayArt.paint(g, kind + "_v7", w, h) || _GameplayArt.paint(g, kind, w, h)) {
         if (lucky) g.drawCircle(w * 0.89, h * 0.17, Math.min(w, h) * 0.095, "#FFF1A3", "#E9A839", 2);
         return;
       }
@@ -556,6 +615,12 @@ var __MARS_ENTRY__ = (() => {
       }
     }
     static pickup(g, type, size) {
+      if (type === "suit_energy") {
+        g.clear();
+        g.drawCircle(size / 2, size / 2, size * 0.43, "#123C50", "#71E9D4", 3);
+        g.drawPoly(0, 0, [size * 0.56, size * 0.13, size * 0.29, size * 0.54, size * 0.47, size * 0.54, size * 0.4, size * 0.85, size * 0.74, size * 0.42, size * 0.56, size * 0.42], "#BCFFF1", "#EBFFF8", 1);
+        return;
+      }
       if (_GameplayArt.paint(g, type, size, size)) return;
       g.clear();
       const center = size / 2;
@@ -629,11 +694,14 @@ var __MARS_ENTRY__ = (() => {
   _GameplayArt.assetUrls = [
     ..._GameplayArt.assetNames.filter((name) => name !== "hud_panel").map((name) => `art/mission/${name}.png`),
     ...["home", "hangar", "flight"].map((name) => `art/mission/${name}.jpg`),
-    ...["logo", "button_gold", "button_blue", "panel", "coin"].map((name) => `art/mission/${name}.png`)
+    ...["logo", "button_gold", "button_blue", "panel", "coin"].map((name) => `art/mission/${name}.png`),
+    ...["stage1_engine", "stage1_tank", "stage2_engine", "stage2_tank", "escape", "cockpit"].map((name) => `art/mission/${name}_v7.png`),
+    ...["launch_earth_v7", "mountains_v7", "cloudsea_v7", "atmosphere_v7"].map((name) => `art/mission/${name}.jpg`),
+    ...["cloud_v7", "airplane_v7", "thrust_v7", "platform_v7"].map((name) => `art/mission/${name}.png`)
   ];
   var GameplayArt = _GameplayArt;
 
-  // source/assets/scripts/prototype/PauseOverlay.ts
+  // assets/scripts/prototype/PauseOverlay.ts
   var PauseOverlay = class {
     constructor(root, onToggle, onRestart, onHome) {
       this.root = root;
@@ -645,10 +713,10 @@ var __MARS_ENTRY__ = (() => {
       this.active = false;
       this.paused = false;
       this.button.name = "mission_pause_button";
-      this.button.size(120, 60);
+      this.button.size(98, 86);
       this.button.mouseEnabled = true;
-      MissionUi.panel(this.button.graphics, 120, 60);
-      this.label(this.button, "\u6682\u505C", 0, 0, 120, 60, 26, "#EFF9FF", true);
+      MissionUi.panel(this.button.graphics, 98, 86);
+      this.label(this.button, "暂停", 0, 0, 98, 86, 24, "#EFF9FF", true);
       this.button.on(Laya.Event.CLICK, this, () => {
         if (this.active && !this.paused) this.onToggle(true);
       });
@@ -678,7 +746,7 @@ var __MARS_ENTRY__ = (() => {
       }
     }
     layout() {
-      this.button.pos(Laya.stage.width - 137, 16);
+      this.button.pos(Laya.stage.width - 114, 16);
       if (this.paused) this.drawModal();
     }
     drawModal() {
@@ -702,22 +770,21 @@ var __MARS_ENTRY__ = (() => {
       mascot.pos((w - 148) / 2, y - 138);
       mascot.mouseEnabled = false;
       overlay.addChild(mascot);
-      this.label(overlay, "\u8FDC\u5F81\u5DF2\u6682\u505C", x + 22, y + 44, cw - 44, 68, 45, "#FFF2D9", true);
-      this.label(overlay, "\u51C6\u5907\u597D\u4E86\uFF0C\u5C31\u7EE7\u7EED\u5411\u661F\u7A7A\u51FA\u53D1", x + 18, y + 154, cw - 36, 52, 25, "#B9DDE9", false);
-      this.label(overlay, "\u8FD9\u6B21\u8FDC\u5F81\u6B63\u5728\u7B49\u5F85\u4F60", x + 18, y + 205, cw - 36, 52, 23, "#94B7CD", false);
-      const resume = this.makeButton("\u7EE7\u7EED\u8FDC\u5F81", 360, 87, "#2584BF");
+      this.label(overlay, "远征已暂停", x + 22, y + 44, cw - 44, 68, 45, "#FFF2D9", true);
+      this.label(overlay, "准备好了，就继续向星空出发", x + 18, y + 154, cw - 36, 52, 25, "#B9DDE9", false);
+      const resume = this.makeButton("继续远征", 360, 87, "#2584BF");
       resume.pos((w - 360) / 2, y + 272);
       resume.on(Laya.Event.CLICK, this, () => this.onToggle(false));
       overlay.addChild(resume);
-      const restart = this.makeButton("\u91CD\u65B0\u5F00\u59CB", 360, 82, "#2584BF");
+      const restart = this.makeButton("重新开始", 360, 82, "#2584BF");
       restart.pos((w - 360) / 2, y + 385);
       restart.on(Laya.Event.CLICK, this, this.onRestart);
       overlay.addChild(restart);
-      const home = this.makeButton("\u8FD4\u56DE\u9996\u9875", 360, 82, "#2584BF");
+      const home = this.makeButton("返回首页", 360, 82, "#2584BF");
       home.pos((w - 360) / 2, y + 492);
       home.on(Laya.Event.CLICK, this, this.onHome);
       overlay.addChild(home);
-      const sound = this.makeButton(GameAudio.isMuted ? "\u6253\u5F00\u97F3\u6548" : "\u5173\u95ED\u97F3\u6548", 280, 58, "#26445C");
+      const sound = this.makeButton(GameAudio.isMuted ? "打开音效" : "关闭音效", 280, 58, "#26445C");
       sound.pos((w - 280) / 2, y + 632);
       sound.on(Laya.Event.CLICK, this, () => {
         GameAudio.toggle();
@@ -726,13 +793,14 @@ var __MARS_ENTRY__ = (() => {
       overlay.addChild(sound);
     }
     makeButton(title, w, h, color) {
-      return MissionUi.button(title, w, h, title === "\u7EE7\u7EED\u8FDC\u5F81");
+      return MissionUi.button(title, w, h, title === "继续远征");
     }
     label(root, text, x, y, w, h, size, color, bold) {
       const label = new Laya.Text();
       label.text = text;
       label.color = color;
       label.bold = bold;
+      label.font = MissionUi.font;
       label.fontSize = size;
       label.align = "center";
       label.valign = "middle";
@@ -742,7 +810,7 @@ var __MARS_ENTRY__ = (() => {
     }
   };
 
-  // source/assets/scripts/prototype/FlightFeedback.ts
+  // assets/scripts/prototype/FlightFeedback.ts
   var FlightFeedback = class {
     constructor(root) {
       this.root = root;
@@ -760,6 +828,7 @@ var __MARS_ENTRY__ = (() => {
       const text = this.textPool.pop() || new Laya.Text();
       const font = tier === "major" ? 42 : tier === "medium" ? 33 : 28;
       text.text = message;
+      text.font = MissionUi.font;
       text.fontSize = font;
       text.bold = true;
       text.color = color;
@@ -783,7 +852,7 @@ var __MARS_ENTRY__ = (() => {
         if (this.sparks.length >= 48) this.recycleSpark(this.sparks.shift().node);
         const sprite = this.sparkPool.pop() || new Laya.Sprite();
         sprite.graphics.clear();
-        sprite.graphics.drawCircle(0, 0, radius * (0.65 + i % 4 * 0.13), color);
+        sprite.graphics.drawPoly(0, 0, [-radius, 0, 0, -radius * 0.38, radius, 0, 0, radius * 0.38], color);
         sprite.graphics.drawCircle(-1, -1, Math.max(1, radius * 0.28), "#FFFFFF");
         const angle = i / count * Math.PI * 2 + this.serial % 7 * 0.08;
         const speed = (tier === "major" ? 0.25 : 0.17) * (0.75 + i % 3 * 0.2);
@@ -879,7 +948,7 @@ var __MARS_ENTRY__ = (() => {
     }
   };
 
-  // source/assets/scripts/prototype/PerformanceMonitor.ts
+  // assets/scripts/prototype/PerformanceMonitor.ts
   var PerformanceMonitor = class {
     constructor(root, enabled) {
       this.enabled = enabled;
@@ -915,13 +984,13 @@ var __MARS_ENTRY__ = (() => {
       });
       if (this.label) {
         this.label.pos(18, Laya.stage.height - 65);
-        this.label.text = `FPS ${this.snapshot.fps} \xB7 P95 ${this.snapshot.p95FrameMs}ms \xB7 \u521A\u4F53 ${counts.bodies}
-\u969C\u788D ${counts.obstacles} \xB7 \u8D44\u6E90 ${counts.pickups} \xB7 \u8865\u6B65 ${this.maxSteps}`;
+        this.label.text = `FPS ${this.snapshot.fps} · P95 ${this.snapshot.p95FrameMs}ms · 刚体 ${counts.bodies}
+障碍 ${counts.obstacles} · 资源 ${counts.pickups} · 补步 ${this.maxSteps}`;
       }
     }
   };
 
-  // source/assets/scripts/prototype/FlightRoutes.ts
+  // assets/scripts/prototype/FlightRoutes.ts
   function rollRoutePickup(mode, random) {
     const weights = GameConfig.pickupWeights[mode];
     if (random < weights.supply) return mode === "astronaut" ? "suit_energy" : "fuel";
@@ -993,7 +1062,7 @@ var __MARS_ENTRY__ = (() => {
     }
   };
 
-  // source/assets/scripts/progression/ModuleRoller.ts
+  // assets/scripts/progression/ModuleRoller.ts
   var ModuleRoller = class {
     static roll(kind, progress) {
       const key = this.getUpgradeKey(
@@ -1022,7 +1091,7 @@ var __MARS_ENTRY__ = (() => {
     }
   };
 
-  // source/assets/scripts/progression/PlayerProgress.ts
+  // assets/scripts/progression/PlayerProgress.ts
   var SAVE_KEY = "dengluhuoxing.progress.v1";
   var MAX_LEVEL = 5;
   var DEFAULT_PROGRESS = {
@@ -1259,7 +1328,7 @@ var __MARS_ENTRY__ = (() => {
     }
   };
 
-  // source/assets/scripts/progression/RunRocketStats.ts
+  // assets/scripts/progression/RunRocketStats.ts
   function createRunRocketStats(rolls) {
     const level = (kind) => {
       var _a, _b;
@@ -1290,7 +1359,7 @@ var __MARS_ENTRY__ = (() => {
     };
   }
 
-  // source/assets/scripts/prototype/AstronautController.ts
+  // assets/scripts/prototype/AstronautController.ts
   var AstronautController = class {
     constructor(parent, spawn, energySeconds, callbacks) {
       this.energySeconds = energySeconds;
@@ -1488,181 +1557,192 @@ var __MARS_ENTRY__ = (() => {
     }
   };
 
-  // source/assets/scripts/prototype/FlightBackdropController.ts
+  // assets/scripts/prototype/FlightBackdropController.ts
   var FlightBackdropController = class {
     constructor(root) {
       this.node = new Laya.Sprite();
-      this.overlay = new Laya.Sprite();
-      this.markers = [];
-      this.visible = true;
-      this.band = -1;
-      this.scenery = new Laya.Sprite();
-      this.illustratedAtmosphere = new Laya.Sprite();
+      this.scenes = [new Laya.Sprite(), new Laya.Sprite()];
+      this.clouds = [];
+      this.plane = new Laya.Sprite();
+      this.stars = [];
       this.reducedMotion = typeof globalThis.matchMedia === "function" && globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      this.altitudes = [0, 1200, 5200, 13e3, 3e4, 65e3, 105e3];
+      this.rendered = [-1, -1];
+      this.visible = false;
+      this.elapsed = 0;
+      this.band = 0;
+      this.blend = 0;
       this.node.name = "flight_backdrop";
-      this.node.size(
-        Laya.stage.width,
-        Laya.stage.height
-      );
-      this.overlay.size(
-        Laya.stage.width,
-        Laya.stage.height
-      );
-      this.overlay.graphics.drawRect(
-        0,
-        0,
-        Laya.stage.width,
-        Laya.stage.height,
-        "#020712"
-      );
-      this.overlay.alpha = 0;
-      this.node.addChild(
-        this.overlay
-      );
-      root.addChildAt(
-        this.node,
-        0
-      );
-      this.node.addChildAt(this.scenery, 0);
-      this.illustratedAtmosphere.name = "flight_illustrated_background";
-      this.illustratedAtmosphere.mouseEnabled = false;
-      this.scenery.addChild(this.illustratedAtmosphere);
-      this.layoutIllustration();
-      this.drawTheme(0);
-      this.createMarkers();
+      this.node.mouseEnabled = false;
+      root.addChildAt(this.node, 0);
+      for (const scene of this.scenes) {
+        scene.mouseEnabled = false;
+        this.node.addChild(scene);
+      }
+      this.createDetails();
+      this.reset();
+      this.setVisible(false);
+    }
+    createDetails() {
+      const w = Laya.stage.width, h = Laya.stage.height;
+      const cloud = MissionUi.texture("cloud_v7");
+      if (cloud) for (let i = 0; i < 6; i++) {
+        const node = new Laya.Sprite();
+        node.name = "atmosphere_cloud_" + i;
+        node.mouseEnabled = false;
+        const cw = 210 + i % 3 * 45, ch = cw * cloud.height / cloud.width;
+        node.graphics.drawTexture(cloud, 0, 0, cw, ch);
+        node.size(cw, ch);
+        node.pos(i % 2 === 0 ? -cw * 0.5 : w - cw * 0.45, h * (0.18 + i * 0.13));
+        this.node.addChild(node);
+        this.clouds.push({ node, factor: 0.28 + i % 3 * 0.12, initialY: node.y });
+      }
+      const plane = MissionUi.texture("airplane_v7");
+      if (plane) {
+        const pw = 180;
+        this.plane.graphics.drawTexture(plane, 0, 0, pw, pw * plane.height / plane.width);
+        this.plane.size(pw, pw * plane.height / plane.width);
+      }
+      this.plane.name = "atmosphere_airplane";
+      this.plane.mouseEnabled = false;
+      this.node.addChild(this.plane);
+      for (let i = 0; i < 12; i++) {
+        const node = new Laya.Sprite();
+        node.mouseEnabled = false;
+        node.graphics.drawCircle(0, 0, i % 4 === 0 ? 2 : 1, "#D6ECFF");
+        node.pos(22 + i * 137 % Math.max(100, w - 44), h * (0.06 + i * 0.079 % 0.8));
+        this.node.addChild(node);
+        this.stars.push({ node, factor: 0.08 + i % 3 * 0.04, initialY: node.y });
+      }
+    }
+    reset() {
+      this.rendered = [-1, -1];
+      this.elapsed = 0;
+      for (const item of [...this.clouds, ...this.stars]) item.node.y = item.initialY;
+      this.update(0, 0, 0);
     }
     resize() {
-      const w = Laya.stage.width, h = Laya.stage.height;
-      this.node.size(w, h);
-      this.overlay.size(w, h);
-      this.overlay.graphics.clear();
-      this.overlay.graphics.drawRect(0, 0, w, h, "#020712");
-      this.band = -1;
-      this.drawTheme(0);
-      this.layoutIllustration();
-    }
-    layoutIllustration() {
-      const w = Laya.stage.width, h = Laya.stage.height;
-      const texture = MissionUi.texture("flight");
-      this.illustratedAtmosphere.graphics.clear();
-      if (texture) {
-        const scale = Math.max(w / texture.width, h / texture.height);
-        this.illustratedAtmosphere.graphics.drawTexture(texture, (w - texture.width * scale) / 2, (h - texture.height * scale) / 2, texture.width * scale, texture.height * scale);
+      this.node.size(Laya.stage.width, Laya.stage.height);
+      for (let i = 0; i < this.clouds.length; i++) {
+        const c = this.clouds[i];
+        c.node.x = i % 2 === 0 ? -c.node.width * 0.5 : Laya.stage.width - c.node.width * 0.45;
+        c.initialY = Laya.stage.height * (0.18 + i * 0.13);
       }
+      for (let i = 0; i < this.stars.length; i++) this.stars[i].initialY = Laya.stage.height * (0.06 + i * 0.079 % 0.8);
+      this.reset();
     }
     setVisible(value) {
       this.visible = value;
       this.node.visible = value;
     }
     update(deltaMs, scrollSpeed, altitudeMeters) {
-      if (!this.visible) return;
-      this.drawTheme(altitudeMeters);
-      const dt = deltaMs / 1e3;
-      for (const marker of this.markers) {
-        marker.node.y += (this.reducedMotion ? 0 : scrollSpeed) * marker.factor * dt;
-        if (marker.node.y > Laya.stage.height + 60) {
-          marker.node.y = -60;
-          marker.node.x = 30 + Math.random() * Math.max(
-            1,
-            Laya.stage.width - 60
-          );
+      const altitude = Math.max(0, altitudeMeters);
+      let first = this.altitudes.length - 1;
+      for (let i = 0; i < this.altitudes.length - 1; i++) if (altitude < this.altitudes[i + 1]) {
+        first = i;
+        break;
+      }
+      const second = Math.min(first + 1, this.altitudes.length - 1);
+      const span = this.altitudes[second] - this.altitudes[first];
+      const window2 = Math.min(9e3, span * 0.27);
+      const t = first === second ? 0 : Math.max(0, Math.min(1, (altitude - (this.altitudes[second] - window2)) / Math.max(1, window2)));
+      const blend = t * t * (3 - 2 * t);
+      this.band = first;
+      this.blend = blend;
+      if (this.rendered[0] !== first) {
+        this.drawScene(this.scenes[0], first);
+        this.rendered[0] = first;
+      }
+      if (this.rendered[1] !== second) {
+        this.drawScene(this.scenes[1], second);
+        this.rendered[1] = second;
+      }
+      this.scenes[0].alpha = 1;
+      this.scenes[1].alpha = first === second ? 0 : blend;
+      this.scenes[0].y = first === 0 ? Math.min(180, altitude * 0.2) : 0;
+      this.scenes[1].y = 0;
+      const dt = Math.max(0, Math.min(0.05, deltaMs / 1e3));
+      if (this.visible && !this.reducedMotion) this.elapsed += dt;
+      const cloudAlpha = Math.min(1, Math.max(0, (altitude - 700) / 1100)) * Math.max(0, Math.min(1, (18500 - altitude) / 4500));
+      for (const c of this.clouds) {
+        c.node.alpha = cloudAlpha * 0.55;
+        if (this.visible && !this.reducedMotion) {
+          c.node.y += scrollSpeed * c.factor * dt;
+          if (c.node.y > Laya.stage.height + 90) c.node.y = -c.node.height - 60;
         }
       }
-      this.overlay.alpha = Math.max(
-        0,
-        Math.min(
-          0.18,
-          altitudeMeters / 1800 * 0.18
-        )
-      );
+      this.plane.visible = altitude >= 5200 && altitude < 13e3;
+      this.plane.alpha = 0.85;
+      this.plane.pos((this.elapsed * 24 + Laya.stage.width * 0.7) % (Laya.stage.width + 240) - 180, Laya.stage.height * 0.38);
+      const starAlpha = Math.max(0, Math.min(1, (altitude - 65e3) / 4e4));
+      for (const s of this.stars) {
+        s.node.alpha = starAlpha * 0.7;
+        if (this.visible && !this.reducedMotion) {
+          s.node.y += scrollSpeed * s.factor * dt;
+          if (s.node.y > Laya.stage.height) s.node.y = -10;
+        }
+      }
     }
-    drawTheme(altitude) {
-      const band = altitude < 500 ? 0 : altitude < 1500 ? 1 : 2;
-      if (band === this.band) return;
-      this.band = band;
-      const w = Laya.stage.width, h = Laya.stage.height, g = this.scenery.graphics;
+    drawScene(scene, band) {
+      const w = Laya.stage.width, h = Laya.stage.height, g = scene.graphics;
       g.clear();
-      if (MissionUi.texture("flight")) return;
-      g.drawRect(0, 0, w, h, band === 0 ? "#123D62" : band === 1 ? "#132B52" : "#091A35");
-      g.drawRect(0, h * 0.7, w, h * 0.3, band === 0 ? "#255E78" : "#173C58");
-      if (band < 2) {
-        const r = w * 0.82;
-        g.drawCircle(w * 0.5, h + r - (band === 0 ? 90 : 30), r, "#3D8895", "#76CBBE", 5);
-        g.drawCircle(w * 0.7, h + r - (band === 0 ? 75 : 15), r * 0.16, "#6DAF9B");
-      } else {
-        g.drawCircle(w * 0.84, h * 0.3, 40, "#B9CADF");
-        g.drawCircle(w * 0.82, h * 0.29, 9, "#839BB6");
-      }
-    }
-    createMarkers() {
-      const width = Laya.stage.width;
-      const height = Laya.stage.height;
-      for (let i = 0; i < 24; i++) {
-        const star = new Laya.Sprite();
-        star.graphics.drawCircle(
-          0,
-          0,
-          i % 5 === 0 ? 3 : 2,
-          i % 3 === 0 ? "#A7D8FF" : "#688AA9"
-        );
-        star.pos(
-          25 + i * 97 % Math.max(
-            50,
-            width - 50
-          ),
-          80 + i * 149 % Math.max(
-            100,
-            height - 140
-          )
-        );
-        this.node.addChild(star);
-        this.markers.push({
-          node: star,
-          factor: 0.45 + i % 4 * 0.18
-        });
-      }
-      for (let i = 0; i < 7; i++) {
-        const wisp = new Laya.Sprite();
-        const w = 130 + i % 3 * 48;
-        wisp.graphics.drawRect(
-          -w / 2,
-          -4,
-          w,
-          8,
-          "#7190AC"
-        );
-        wisp.alpha = 0.12 + i % 2 * 0.06;
-        wisp.pos(
-          80 + i * 123 % Math.max(
-            120,
-            width - 120
-          ),
-          280 + i * 173 % Math.max(
-            200,
-            height - 350
-          )
-        );
-        this.node.addChild(wisp);
-        this.markers.push({
-          node: wisp,
-          factor: 0.78 + i % 3 * 0.16
-        });
-      }
+      scene.size(w, h);
+      const names = ["launch_earth_v7", "mountains_v7", "cloudsea_v7", "cloudsea_v7", "atmosphere_v7", "atmosphere_v7", "flight"];
+      const texture = MissionUi.texture(names[band]);
+      if (!texture) throw new Error("Missing required altitude artwork: " + names[band]);
+      const overscan = band === 0 ? 220 : 0;
+      const scale = Math.max(w / texture.width, (h + overscan) / texture.height) * (band === 3 ? 1.48 : 1);
+      const top = band === 0 ? -220 : band === 3 ? 0 : (h - texture.height * scale) / 2;
+      g.drawTexture(texture, (w - texture.width * scale) / 2, top, texture.width * scale, texture.height * scale);
+      if (band === 3) g.drawRect(0, 0, w, h, "#07325B66");
+      if (band === 5) g.drawRect(0, 0, w, h, "#020D3266");
     }
   };
 
-  // source/assets/scripts/progression/UpgradeBenefits.ts
+  // assets/scripts/prototype/FlightAscentModel.ts
+  var FlightAscentModel = class {
+    constructor() {
+      this.altitudeMeters = 0;
+      this.velocityMetersPerSecond = 0;
+      this.phase = null;
+      this.phaseElapsedSeconds = 0;
+    }
+    reset() {
+      this.altitudeMeters = 0;
+      this.velocityMetersPerSecond = 0;
+      this.phaseElapsedSeconds = 0;
+      this.phase = null;
+    }
+    advance(phase, deltaMs, engineMultiplier = 1) {
+      const dt = Math.max(0, Math.min(0.1, deltaMs / 1e3));
+      if (!dt) return;
+      if (phase !== this.phase) {
+        this.phase = phase;
+        this.phaseElapsedSeconds = 0;
+      }
+      const t = this.phaseElapsedSeconds;
+      const engine = Math.max(0.5, Math.min(3, engineMultiplier));
+      const acceleration = phase === "stage1" ? (13 + Math.min(15, t * 0.5)) * engine : phase === "stage2" ? (20 + Math.min(25, t * 1.1)) * engine : phase === "separation" ? -7 : -4;
+      const priorVelocity = this.velocityMetersPerSecond;
+      const nextVelocity = Math.max(0, Math.min(4200, priorVelocity + acceleration * dt));
+      this.altitudeMeters += (priorVelocity + nextVelocity) * 0.5 * dt;
+      this.velocityMetersPerSecond = nextVelocity;
+      this.phaseElapsedSeconds += dt;
+    }
+  };
+
+  // assets/scripts/progression/UpgradeBenefits.ts
   function upgradeBenefit(key, level) {
     const next = level + 1;
     const fuel = (n) => 1 + (n - 1) * 0.14;
     const energy = (n) => 1 + (n - 1) * 0.12;
-    if (key === "engine") return `\u4E00\u7EA7\u4E0A\u5347 ${(16 * (1 + (level - 1) * 0.12)).toFixed(1)} \u2192 ${(16 * (1 + level * 0.12)).toFixed(1)} \u7C73/\u79D2`;
-    if (key === "fuel") return `\u4E00\u7EA7\u7EED\u822A ${(30 * fuel(level)).toFixed(1)} \u2192 ${(30 * fuel(next)).toFixed(1)} \u79D2`;
-    if (key === "escape") return `\u5B87\u822A\u670D ${(GameConfig.astronautEnergySeconds * energy(level)).toFixed(1)} \u2192 ${(GameConfig.astronautEnergySeconds * energy(next)).toFixed(1)} \u79D2`;
-    return `\u8F6C\u5411\u7075\u654F\u5EA6 ${100 + (level - 1) * 10}% \u2192 ${100 + level * 10}%`;
+    if (key === "engine") return `发动机推力 ${Math.round((1 + (level - 1) * 0.12) * 100)}% → ${Math.round((1 + level * 0.12) * 100)}%`;
+    if (key === "fuel") return `一级续航 ${(30 * fuel(level)).toFixed(1)} → ${(30 * fuel(next)).toFixed(1)} 秒`;
+    if (key === "escape") return `宇航服 ${(GameConfig.astronautEnergySeconds * energy(level)).toFixed(1)} → ${(GameConfig.astronautEnergySeconds * energy(next)).toFixed(1)} 秒`;
+    return `转向灵敏度 ${100 + (level - 1) * 10}% → ${100 + level * 10}%`;
   }
 
-  // source/assets/scripts/prototype/HomePanel.ts
+  // assets/scripts/prototype/HomePanel.ts
   var HomePanel = class {
     constructor(root) {
       this.root = root;
@@ -1722,8 +1802,12 @@ var __MARS_ENTRY__ = (() => {
       panel.graphics.clear();
       panel.graphics.drawRect(0, 0, width, height, "#081426");
       this.addIllustration(panel);
-      MissionUi.picture(panel, "logo", (width - 660) / 2, Math.max(38, height * 0.028), 660, 420);
-      const gear = MissionUi.button("\u2699", 76, 76);
+      const veil = new Laya.Sprite();
+      veil.mouseEnabled = false;
+      veil.graphics.drawRect(0, 0, width, height, "#06122722");
+      panel.addChild(veil);
+      MissionUi.picture(panel, "logo", (width - 660) / 2, Math.max(38, height * 0.028), 640, 360);
+      const gear = MissionUi.button("⚙", 86, 86);
       gear.name = "home_settings";
       gear.pos(width - 96, 24);
       gear.on(Laya.Event.CLICK, this, () => {
@@ -1737,33 +1821,32 @@ var __MARS_ENTRY__ = (() => {
         card.size(530, 430).pos((width - 530) / 2, (height - 430) / 2);
         MissionUi.panel(card.graphics, 530, 430);
         overlay.addChild(card);
-        MissionUi.text(card, "\u58F0\u97F3\u8BBE\u7F6E", 0, 38, 530, 70, 40, "#FFE287", true);
-        const sound = MissionUi.button(GameAudio.isMuted ? "\u6253\u5F00\u97F3\u6548" : "\u5173\u95ED\u97F3\u6548", 350, 92);
+        MissionUi.text(card, "声音设置", 0, 38, 530, 70, 40, "#FFE287", true);
+        const sound = MissionUi.button(GameAudio.isMuted ? "打开音效" : "关闭音效", 350, 92);
         sound.pos(90, 153);
         card.addChild(sound);
         sound.on(Laya.Event.CLICK, this, () => {
           GameAudio.toggle();
           this.renderMain(panel, progress, options, onStart, onUpgrade);
         });
-        const close = MissionUi.button("\u8FD4\u56DE", 280, 82);
+        const close = MissionUi.button("返回", 280, 82);
         close.pos(125, 286);
         close.on(Laya.Event.CLICK, this, () => overlay.destroy(true));
         card.addChild(close);
       });
       panel.addChild(gear);
-      MissionUi.text(panel, GameAudio.isMuted ? "\u97F3\u6548\u5173" : "\u97F3\u6548\u5F00", width - 109, 103, 100, 28, 18, "#BED8ED");
-      const resourceY = height - 455;
-      let y = height * 0.365;
-      const rocketScale = Math.min(0.56, (resourceY - y - 24) / 728);
+      const resourceY = height - 385;
+      let y = height * 0.325;
+      const rocketScale = Math.min(0.66, (resourceY - y - 35) / 728);
       for (const definition of [...GameConfig.modules].reverse()) {
         const module = new Laya.Sprite();
         const w = definition.width * rocketScale, h = definition.height * rocketScale;
         GameplayArt.module(module.graphics, definition.kind, w, h);
-        module.pos(width * 0.245 - w / 2, y);
+        module.pos(width * 0.27 - w / 2, y);
         panel.addChild(module);
         y += h - 1;
       }
-      const recordY = height * 0.36;
+      const recordY = height * 0.32;
       const mascotHeight = Math.min(340, resourceY - (recordY + 142) - 24);
       const mascotWidth = mascotHeight * 270 / 340;
       const mascot = new Laya.Sprite();
@@ -1779,28 +1862,28 @@ var __MARS_ENTRY__ = (() => {
       record.mouseEnabled = false;
       MissionUi.panel(record.graphics, 284, 142);
       panel.addChild(record);
-      MissionUi.text(record, "\u5386\u53F2\u6700\u9AD8", 0, 17, 284, 38, 29, "#ECF5FF", true);
+      MissionUi.text(record, "历史最高", 0, 17, 284, 38, 29, "#ECF5FF", true);
       MissionUi.text(record, this.formatAltitude(progress.bestAltitudeMeters), 0, 58, 284, 59, 44, "#FFE287", true);
       const resources = new Laya.Sprite();
       resources.name = "home_resource_card";
       const rw = Math.min(674, width - 56);
-      resources.size(rw, 150).pos((width - rw) / 2, height - 455);
-      MissionUi.panel(resources.graphics, rw, 150);
+      resources.size(rw, 128).pos((width - rw) / 2, resourceY);
+      MissionUi.panel(resources.graphics, rw, 128);
       panel.addChild(resources);
-      const items = [{ name: "coin", label: "\u706B\u661F\u5E01", value: progress.marsCoins }, { name: "metal", label: "\u91D1\u5C5E", value: progress.metal }, { name: "chip", label: "\u82AF\u7247", value: progress.chips }];
+      const items = [{ name: "coin", label: "火星币", value: progress.marsCoins }, { name: "metal", label: "金属", value: progress.metal }, { name: "chip", label: "芯片", value: progress.chips }];
       items.forEach((item, i) => {
         const x = i * rw / 3;
         MissionUi.text(resources, item.label, x, 16, rw / 3, 31, 25, "#D6E6F5", true);
-        MissionUi.picture(resources, item.name, x + 23, 66, 54, 54);
-        MissionUi.text(resources, String(item.value), x + 76, 62, rw / 3 - 95, 60, 35, "#FFFFFF", true, "left");
+        MissionUi.picture(resources, item.name, x + 23, 55, 54, 54);
+        MissionUi.text(resources, String(item.value), x + 86, 52, rw / 3 - 105, 58, 33, "#FFFFFF", true, "left");
       });
-      const start = MissionUi.button("\u5F00\u59CB\u9020\u706B\u7BAD", 560, 124, true);
-      start.pos((width - 560) / 2, height - 279);
+      const start = MissionUi.button("开始造火箭", 560, 110, true);
+      start.pos((width - 560) / 2, height - 232);
       start.once(Laya.Event.CLICK, this, onStart);
       panel.addChild(start);
       const available = options.filter((o) => o.canUpgrade).length;
-      const upgrade = MissionUi.button(available ? `\u79D1\u7814\u5347\u7EA7  \xB7  ${available} \u9879\u53EF\u63D0\u5347` : "\u79D1\u7814\u5347\u7EA7", 450, 84);
-      upgrade.pos((width - 450) / 2, height - 132);
+      const upgrade = MissionUi.button(available ? `科研升级  ·  ${available} 项可提升` : "科研升级", 450, 72);
+      upgrade.pos((width - 450) / 2, height - 100);
       upgrade.once(Laya.Event.CLICK, this, () => this.renderUpgrade(panel, progress, options, onStart, onUpgrade));
       panel.addChild(upgrade);
     }
@@ -1820,7 +1903,7 @@ var __MARS_ENTRY__ = (() => {
       const width = Laya.stage.width;
       this.addText(
         panel,
-        "\u6C38\u4E45\u5347\u7EA7",
+        "永久升级",
         0,
         92,
         width,
@@ -1831,7 +1914,7 @@ var __MARS_ENTRY__ = (() => {
       );
       this.addText(
         panel,
-        `\u706B\u661F\u5E01 ${progress.marsCoins} \xB7 \u91D1\u5C5E ${progress.metal} \xB7 \u82AF\u7247 ${progress.chips}`,
+        `火星币 ${progress.marsCoins} · 金属 ${progress.metal} · 芯片 ${progress.chips}`,
         30,
         156,
         width - 60,
@@ -1840,20 +1923,22 @@ var __MARS_ENTRY__ = (() => {
         "#A9BED2",
         false
       );
-      let y = 230;
+      let y = 215;
+      const rowStep = Math.max(145, (Laya.stage.height - 415) / 4);
       for (const option of options) {
         this.addUpgradeRow(
           panel,
           option,
           y,
-          () => onUpgrade(option.key)
+          () => onUpgrade(option.key),
+          rowStep - 18
         );
-        y += 122;
+        y += rowStep;
       }
       const back = this.createButton(
-        "\u8FD4\u56DE\u9996\u9875",
+        "返回首页",
         250,
-        68,
+        88,
         "#3F5367"
       );
       back.pos(
@@ -1873,9 +1958,9 @@ var __MARS_ENTRY__ = (() => {
       );
       panel.addChild(back);
       const start = this.createButton(
-        "\u5F00\u59CB\u9020\u706B\u7BAD",
+        "开始造火箭",
         250,
-        68,
+        88,
         "#2D7FD2"
       );
       start.pos(
@@ -1889,7 +1974,7 @@ var __MARS_ENTRY__ = (() => {
       );
       panel.addChild(start);
     }
-    addUpgradeRow(parent, option, y, onClick) {
+    addUpgradeRow(parent, option, y, onClick, rowHeight = 140) {
       const width = Math.min(
         620,
         Laya.stage.width - 60
@@ -1899,55 +1984,59 @@ var __MARS_ENTRY__ = (() => {
         (Laya.stage.width - width) / 2,
         y
       );
-      MissionUi.panel(row.graphics, width, 108);
+      row.name = "research_row_" + option.key;
+      row.size(width, rowHeight);
+      MissionUi.panel(row.graphics, width, rowHeight);
+      const art = option.key === "engine" ? "stage1_engine_v7" : option.key === "fuel" ? "stage1_tank_v7" : option.key === "cockpit" ? "cockpit_v7" : "astronaut";
+      MissionUi.picture(row, art, 18, (rowHeight - 98) / 2, 98, 98);
       parent.addChild(row);
       this.addText(
         row,
         `${option.label}  Lv.${option.level}`,
-        18,
-        8,
-        200,
-        30,
-        21,
+        136,
+        rowHeight * 0.17,
+        width - 296,
+        36,
+        28,
         "#FFFFFF",
         true,
         "left"
       );
       const maxed = option.level >= option.maxLevel;
-      const costText = maxed ? "\u5DF2\u6EE1\u7EA7" : `${option.cost.marsCoins}\u5E01 / ${option.cost.metal}\u91D1\u5C5E / ${option.cost.chips}\u82AF\u7247`;
+      const costText = maxed ? "已满级" : `${option.cost.marsCoins}币 / ${option.cost.metal}金属 / ${option.cost.chips}芯片`;
       this.addText(
         row,
         costText,
-        18,
-        46,
-        width - 170,
-        28,
-        20,
+        136,
+        rowHeight * 0.4,
+        width - 296,
+        32,
+        24,
         "#99B0C8",
         false,
         "left"
       );
       this.addText(
         row,
-        maxed ? "\u540C\u7C7B\u6A21\u5757\u6700\u4F4E\u7B49\u7EA7\u5DF2\u63D0\u5347\u81F3 Lv.5" : upgradeBenefit(option.key, option.level),
-        18,
-        76,
-        width - 36,
-        26,
-        23,
+        maxed ? "同类模块最低 Lv.5" : upgradeBenefit(option.key, option.level),
+        136,
+        rowHeight * 0.69,
+        width - 158,
+        32,
+        24,
         "#B1DCCB",
         false,
         "left"
       );
       const button = this.createButton(
-        maxed ? "\u6EE1\u7EA7" : "\u5347\u7EA7",
-        120,
-        50,
+        maxed ? "满级" : "升级",
+        126,
+        86,
         option.canUpgrade ? "#2D8B65" : "#4B5665"
       );
       button.pos(
         width - 140,
-        17
+        (rowHeight - 86) / 2
       );
       if (option.canUpgrade) {
         button.once(
@@ -1959,7 +2048,12 @@ var __MARS_ENTRY__ = (() => {
       row.addChild(button);
     }
     createButton(textValue, width, height, color) {
-      return MissionUi.button(textValue, width, height, color === "#E39B39");
+      const button = MissionUi.button(textValue, width, height, color === "#E39B39");
+      if (color === "#4B5665") {
+        button.alpha = 0.48;
+        button.mouseEnabled = false;
+      }
+      return button;
     }
     addText(parent, textValue, x, y, width, height, fontSize, color, bold, align = "center") {
       const text = new Laya.Text();
@@ -1969,6 +2063,7 @@ var __MARS_ENTRY__ = (() => {
         text.stroke = 1;
         text.strokeColor = "#19243B";
       }
+      text.font = MissionUi.font;
       text.fontSize = fontSize;
       text.bold = bold;
       text.align = align;
@@ -1983,7 +2078,7 @@ var __MARS_ENTRY__ = (() => {
     }
   };
 
-  // source/assets/scripts/prototype/FlightObstacleManager.ts
+  // assets/scripts/prototype/FlightObstacleManager.ts
   var FlightObstacle = class {
     constructor(x, y, speed, onHit) {
       this.speed = speed;
@@ -2180,7 +2275,7 @@ var __MARS_ENTRY__ = (() => {
     }
   };
 
-  // source/assets/scripts/prototype/FlightPickupManager.ts
+  // assets/scripts/prototype/FlightPickupManager.ts
   var FlightPickup = class {
     constructor(type, x, y, speed, onHit) {
       this.type = type;
@@ -2290,15 +2385,15 @@ var __MARS_ENTRY__ = (() => {
     }
     getLabel(type) {
       if (type === "fuel") {
-        return "\u71C3";
+        return "燃";
       }
       if (type === "metal") {
-        return "\u94C1";
+        return "铁";
       }
       if (type === "chip") {
-        return "\u82AF";
+        return "芯";
       }
-      return "\u80FD";
+      return "能";
     }
   };
   var FlightPickupManager = class {
@@ -2417,7 +2512,7 @@ var __MARS_ENTRY__ = (() => {
     }
   };
 
-  // source/assets/scripts/prototype/RocketAssembly.ts
+  // assets/scripts/prototype/RocketAssembly.ts
   var RocketAssembly = class {
     constructor(modules) {
       this.modules = modules;
@@ -2659,7 +2754,7 @@ var __MARS_ENTRY__ = (() => {
     }
   };
 
-  // source/assets/scripts/prototype/RocketFlightController.ts
+  // assets/scripts/prototype/RocketFlightController.ts
   var RocketFlightController = class {
     constructor(assembly, metrics, runStats, callbacks) {
       this.assembly = assembly;
@@ -2931,7 +3026,7 @@ var __MARS_ENTRY__ = (() => {
     }
   };
 
-  // source/assets/scripts/prototype/PrototypeHud.ts
+  // assets/scripts/prototype/PrototypeHud.ts
   var PrototypeHud = class {
     constructor(root) {
       this.root = root;
@@ -2943,6 +3038,7 @@ var __MARS_ENTRY__ = (() => {
       this.lastBarKey = "";
       this.compact = false;
       this.lastDisplayedFuelRatio = 1;
+      this.velocity = new Laya.Text();
       this.title = new Laya.Text();
       this.status = new Laya.Text();
       this.hint = new Laya.Text();
@@ -2952,7 +3048,7 @@ var __MARS_ENTRY__ = (() => {
       this.panel.alpha = 0.96;
       this.root.addChild(this.panel);
       this.root.addChild(this.fuelBar);
-      this.title.text = "\u642D\u5EFA\u706B\u7BAD";
+      this.title.text = "搭建火箭";
       this.title.color = "#FFFFFF";
       this.title.fontSize = 28;
       this.title.stroke = 2;
@@ -2995,6 +3091,15 @@ var __MARS_ENTRY__ = (() => {
       this.root.addChild(
         this.runInfo
       );
+      this.velocity.name = "flight_velocity";
+      this.velocity.color = "#9ED3EA";
+      this.velocity.fontSize = 23;
+      this.velocity.mouseEnabled = false;
+      this.root.addChild(this.velocity);
+      for (const t of [this.title, this.status, this.hint, this.fuel, this.health, this.runInfo, this.toast, this.velocity]) {
+        t.font = MissionUi.font;
+        t.mouseEnabled = false;
+      }
       this.toastPlate.name = "mission_feedback_plate";
       this.toastPlate.mouseEnabled = false;
       this.toastPlate.visible = false;
@@ -3011,6 +3116,7 @@ var __MARS_ENTRY__ = (() => {
     }
     setVisible(value) {
       this.panel.visible = value;
+      this.velocity.visible = value && this.compact;
       this.fuelBar.visible = value && this.fuel.visible;
       this.title.visible = value;
       this.status.visible = value;
@@ -3026,37 +3132,40 @@ var __MARS_ENTRY__ = (() => {
     setCompact(value) {
       if (this.compact === value) return;
       this.compact = value;
-      this.title.text = value ? "0 m" : "\u642D\u5EFA\u706B\u7BAD";
+      this.title.text = value ? "0 m" : "搭建火箭";
       this.layout();
     }
     layout() {
       const width = Laya.stage.width;
-      const panelHeight = this.compact ? 180 : 222;
+      const panelHeight = this.compact ? 172 : 202;
       this.panel.size(width, panelHeight);
       this.panel.graphics.clear();
       MissionUi.panel(this.panel.graphics, width, panelHeight);
       if (this.compact) {
-        this.title.fontSize = 43;
+        this.velocity.visible = true;
+        this.velocity.size(280, 32).pos(25, 68);
+        this.title.fontSize = 49;
         this.title.align = "left";
         this.title.size(width - 170, 58).pos(24, 15);
         this.status.fontSize = 21;
         this.status.align = "left";
-        this.status.size(width - 170, 30).pos(24, 76);
+        this.status.size(width - 170, 30).pos(24, 102);
         this.hint.fontSize = 19;
         this.hint.size(width - 48, 27).pos(24, 142);
         this.fuel.fontSize = 21;
         this.fuel.align = "right";
         this.fuel.size(270, 32).pos(width - 302, 104);
-        this.fuelBar.pos(28, 116);
-        this.health.fontSize = 21;
-        this.health.align = "left";
-        this.health.size(220, 28).pos(28, 145);
+        this.fuelBar.pos(28, 140);
+        this.health.fontSize = 20;
+        this.health.align = "right";
+        this.health.size(270, 28).pos(width - 298, 136);
         this.runInfo.fontSize = 20;
         this.runInfo.align = "right";
-        this.runInfo.size(width - 270, 27).pos(245, 76);
+        this.runInfo.size(Math.max(160, width - 480), 27).pos(width - 430, 72);
         this.hint.visible = false;
       } else {
-        this.title.text = "\u642D\u5EFA\u706B\u7BAD";
+        this.velocity.visible = false;
+        this.title.text = "搭建火箭";
         this.title.fontSize = 39;
         this.title.align = "center";
         this.title.size(width - 170, 54).pos(20, 13);
@@ -3072,7 +3181,7 @@ var __MARS_ENTRY__ = (() => {
         this.health.size(width - 40, 30).pos(20, 174);
         this.runInfo.fontSize = 21;
         this.runInfo.align = "center";
-        this.runInfo.size(width - 40, 50).pos(20, 158);
+        this.runInfo.size(width - 40, 40).pos(20, 151);
       }
       const toastY = panelHeight + 22;
       this.toast.size(width - 110, 58).pos(55, toastY);
@@ -3084,10 +3193,10 @@ var __MARS_ENTRY__ = (() => {
       if (this.fuelBar.visible) this.drawFuelBar(this.lastDisplayedFuelRatio);
     }
     showMilestone(meters) {
-      this.showToast(`\u7A81\u7834 ${this.formatAltitude(meters)}\uFF01`);
+      this.showToast(`突破 ${this.formatAltitude(meters)}！`);
     }
     showPlacement(offset) {
-      this.showToast(offset < 12 ? "\u5B8C\u7F8E\u5BF9\u9F50\uFF01" : offset < 40 ? "\u843D\u7A33\u4E86 \xB7 \u7EE7\u7EED\u642D\u5EFA" : "\u504F\u79FB\u8F83\u5927 \xB7 \u4E0B\u4E00\u5757\u6CE8\u610F\u91CD\u5FC3");
+      this.showToast(offset < 12 ? "完美对齐！" : offset < 40 ? "落稳了 · 继续搭建" : "偏移较大 · 下一块注意重心");
     }
     drawFuelBar(ratio) {
       this.lastDisplayedFuelRatio = ratio;
@@ -3121,7 +3230,7 @@ var __MARS_ENTRY__ = (() => {
     }
     setProgress(current, total, message = "") {
       this.setCompact(false);
-      this.status.text = message || `\u642D\u5EFA\u8FDB\u5EA6 ${current} / ${total}`;
+      this.status.text = message || `搭建进度 ${current} / ${total}`;
       this.fuel.text = "";
       this.health.text = "";
       this.fuel.visible = false;
@@ -3133,8 +3242,8 @@ var __MARS_ENTRY__ = (() => {
       this.setBuildingHint();
     }
     setFailure() {
-      this.status.text = "\u5EFA\u9020\u5931\u8D25 \xB7 \u6B63\u5728\u91CD\u65B0\u51C6\u5907";
-      this.hint.text = "\u706B\u7BAD\u5012\u584C\uFF0C\u7EA6 1 \u79D2\u540E\u81EA\u52A8\u91CD\u5F00";
+      this.status.text = "建造失败 · 正在重新准备";
+      this.hint.text = "火箭倒塌，约 1 秒后自动重开";
       this.fuel.text = "";
       this.health.text = "";
       this.fuel.visible = false;
@@ -3149,9 +3258,9 @@ var __MARS_ENTRY__ = (() => {
       const percent = Math.round(
         metrics.stability * 100
       );
-      this.status.text = `\u5EFA\u9020\u5B8C\u6210 \xB7 \u7A33\u5B9A\u5EA6 ${percent}%`;
+      this.status.text = `建造完成 · 稳定度 ${percent}%`;
       const penalty = Math.round((1 - metrics.stability) * GameConfig.maxBuildFuelPenalty * 100);
-      this.hint.text = penalty > 0 ? `\u642D\u5EFA\u504F\u79FB\uFF1A\u989D\u5916\u71C3\u8017 ${penalty}%` : luckyCount > 0 ? `\u672C\u679A\u706B\u7BAD\u51FA\u73B0 ${luckyCount} \u4E2A\u8D85\u7B49\u7EA7\u6A21\u5757 \u2726` : "\u672C\u679A\u706B\u7BAD\u4E3A\u6807\u51C6\u7B49\u7EA7\u914D\u7F6E";
+      this.hint.text = penalty > 0 ? `搭建偏移：额外燃耗 ${penalty}%` : luckyCount > 0 ? `本枚火箭出现 ${luckyCount} 个超等级模块 ✦` : "本枚火箭为标准等级配置";
       this.fuel.visible = false;
       this.fuel.text = "";
       this.health.text = "";
@@ -3164,9 +3273,9 @@ var __MARS_ENTRY__ = (() => {
       const percent = Math.round(
         metrics.stability * 100
       );
-      this.showToast("\u4E00\u7EA7\u53D1\u52A8\u673A\u70B9\u706B\uFF01");
-      this.status.text = `\u4E00\u7EA7\u70B9\u706B\uFF01\u7A33\u5B9A\u5EA6 ${percent}%`;
-      this.hint.text = "\u8EB2\u969C\u788D\uFF0C\u62FE\u53D6\u71C3\u6599 / \u91D1\u5C5E / \u82AF\u7247";
+      this.showToast("一级发动机点火！");
+      this.status.text = `一级点火！稳定度 ${percent}%`;
+      this.hint.text = "躲障碍，拾取燃料 / 金属 / 芯片";
       this.renderFuel(1, 1);
       this.renderHealth(
         hp,
@@ -3178,12 +3287,12 @@ var __MARS_ENTRY__ = (() => {
       const stability = Math.round(
         metrics.stability * 100
       );
-      const direction = metrics.drift > 0.08 ? "\u53F3\u504F" : metrics.drift < -0.08 ? "\u5DE6\u504F" : "\u57FA\u672C\u76F4\u98DE";
+      const direction = metrics.drift > 0.08 ? "右偏" : metrics.drift < -0.08 ? "左偏" : "基本直飞";
       const control = Math.round(
         input * 100
       );
-      this.status.text = `${stage === 1 ? "\u4E00\u7EA7" : "\u4E8C\u7EA7"}\u98DE\u884C  \xB7  \u7A33\u5B9A ${stability}%`;
-      this.hint.text = "\u5DE6\u53F3\u62D6\u52A8\uFF1A\u8EB2\u9668\u77F3\uFF0C\u6CBF\u8D44\u6E90\u4E32\u6536\u96C6";
+      this.status.text = `${stage === 1 ? "一级" : "二级"}飞行  ·  稳定 ${stability}%`;
+      this.hint.text = "左右拖动：躲陨石，沿资源串收集";
       this.renderFuel(
         stage,
         fuelRatio
@@ -3194,19 +3303,19 @@ var __MARS_ENTRY__ = (() => {
       );
     }
     setRocketDamaged(hp, maxHp) {
-      this.showToast(`\u53D7\u5230\u649E\u51FB \xB7 \u8010\u4E45 ${hp}/${maxHp}`);
-      this.status.text = `\u26A0 \u706B\u7BAD\u906D\u5230\u649E\u51FB \xB7 \u5269\u4F59\u8010\u4E45 ${hp}/${maxHp}`;
-      this.hint.text = hp > 0 ? "\u7EE7\u7EED\u8EB2\u907F\u969C\u788D" : "\u8010\u4E45\u5F52\u96F6\uFF0C\u9003\u751F\u7CFB\u7EDF\u542F\u52A8";
+      this.showToast(`受到撞击 · 耐久 ${hp}/${maxHp}`);
+      this.status.text = `⚠ 火箭遭到撞击 · 剩余耐久 ${hp}/${maxHp}`;
+      this.hint.text = hp > 0 ? "继续躲避障碍" : "耐久归零，逃生系统启动";
       this.renderHealth(
         hp,
         maxHp
       );
     }
     setStageSeparation(hp, maxHp) {
-      this.status.text = "\u26A0 \u4E00\u7EA7\u71C3\u6599\u8017\u5C3D \xB7 \u4E00\u7EA7\u5206\u79BB";
-      this.hint.text = "\u4E00\u7EA7\u53D1\u52A8\u673A + \u4E00\u7EA7\u71C3\u6599\u4ED3\u8131\u79BB\u5760\u843D";
+      this.status.text = "⚠ 一级燃料耗尽 · 一级分离";
+      this.hint.text = "一级发动机 + 一级燃料仓脱离坠落";
       this.fuel.visible = true;
-      this.fuel.text = "\u4E00\u7EA7\u71C3\u6599\u8017\u5C3D";
+      this.fuel.text = "一级燃料耗尽";
       this.drawFuelBar(0);
       this.renderHealth(
         hp,
@@ -3214,9 +3323,9 @@ var __MARS_ENTRY__ = (() => {
       );
     }
     setStage2Ignition(hp, maxHp) {
-      this.showToast("\u4E8C\u7EA7\u53D1\u52A8\u673A\u70B9\u706B\uFF01");
-      this.status.text = "\u4E8C\u7EA7\u53D1\u52A8\u673A\u70B9\u706B\uFF01";
-      this.hint.text = "\u4E8C\u7EA7\u8D44\u6E90\u66F4\u597D\uFF0C\u4F46\u969C\u788D\u66F4\u5BC6";
+      this.showToast("二级发动机点火！");
+      this.status.text = "二级发动机点火！";
+      this.hint.text = "二级资源更好，但障碍更密";
       this.renderFuel(
         2,
         1
@@ -3227,10 +3336,10 @@ var __MARS_ENTRY__ = (() => {
       );
     }
     setEscape(reason) {
-      this.status.text = reason === "damage" ? "\u26A0 \u706B\u7BAD\u635F\u6BC1 \xB7 \u7D27\u6025\u9003\u751F\uFF01" : "\u4E8C\u7EA7\u71C3\u6599\u8017\u5C3D \xB7 \u9003\u751F\u8231\u5F39\u5C04\uFF01";
-      this.hint.text = "\u706B\u7BAD\u6B8B\u9AB8\u5760\u843D\uFF0C\u5207\u6362\u5B87\u822A\u5458\u63A8\u8FDB";
+      this.status.text = reason === "damage" ? "⚠ 火箭损毁 · 紧急逃生！" : "二级燃料耗尽 · 逃生舱弹射！";
+      this.hint.text = "火箭残骸坠落，切换宇航员推进";
       this.fuel.visible = true;
-      this.fuel.text = "\u6B63\u5728\u5F39\u5C04\u2026";
+      this.fuel.text = "正在弹射…";
       this.fuelBar.visible = false;
       this.health.text = "";
       this.health.visible = false;
@@ -3249,29 +3358,29 @@ var __MARS_ENTRY__ = (() => {
       const filled = Math.round(
         percent / 10
       );
-      const bar = "\u25A0".repeat(filled) + "\u25A1".repeat(
+      const bar = "■".repeat(filled) + "□".repeat(
         10 - filled
       );
       const control = Math.round(
         input * 100
       );
-      this.status.text = "\u5B87\u822A\u5458\u7EE7\u7EED\u8FDC\u5F81";
-      this.hint.text = "\u66F4\u7075\u6D3B\u7684\u5B87\u822A\u5458 \xB7 \u7EE7\u7EED\u6536\u96C6\u8D44\u6E90";
+      this.status.text = "宇航员继续远征";
+      this.hint.text = "更灵活的宇航员 · 继续收集资源";
       this.fuel.visible = true;
       this.health.visible = true;
-      this.fuel.text = `\u5B87\u822A\u670D\u80FD\u6E90 ${percent}%`;
+      this.fuel.text = `宇航服能源 ${percent}%`;
       this.drawFuelBar(energyRatio);
-      this.health.text = "\u649E\u9668\u77F3\u635F\u5931 25% \u80FD\u6E90";
+      this.health.text = "撞陨石损失 25% 能源";
     }
     setAstronautDamaged() {
-      this.showToast("\u649E\u51FB\u635F\u5931 25% \u5B87\u822A\u670D\u80FD\u6E90");
-      this.status.text = "\u26A0 \u5B87\u822A\u5458\u649E\u5230\u969C\u788D";
-      this.hint.text = "\u5B87\u822A\u670D\u80FD\u6E90\u53D7\u635F\uFF0C\u7EE7\u7EED\u8C03\u6574\u65B9\u5411";
+      this.showToast("撞击损失 25% 宇航服能源");
+      this.status.text = "⚠ 宇航员撞到障碍";
+      this.hint.text = "宇航服能源受损，继续调整方向";
     }
     setRunComplete() {
       this.toast.text = "";
-      this.status.text = "\u672C\u6B21\u8FDC\u5F81\u7ED3\u675F";
-      this.hint.text = "\u6B63\u5728\u7ED3\u7B97\u9AD8\u5EA6\u4E0E\u8FDC\u5F81\u8D44\u6E90";
+      this.status.text = "本次远征结束";
+      this.hint.text = "正在结算高度与远征资源";
       this.fuel.text = "";
       this.health.text = "";
       this.fuel.visible = false;
@@ -3281,7 +3390,7 @@ var __MARS_ENTRY__ = (() => {
       this.toastPlate.visible = false;
       this.toastRemainingMs = 0;
     }
-    setRunProgress(altitudeMeters, bestMeters, runMetal, runChips, newRecord) {
+    setRunProgress(altitudeMeters, bestMeters, runMetal, runChips, newRecord, velocityMps = 0) {
       const altitude = this.formatAltitude(
         altitudeMeters
       );
@@ -3291,12 +3400,12 @@ var __MARS_ENTRY__ = (() => {
           altitudeMeters
         )
       );
-      this.title.text = altitude;
-      this.runInfo.text = `\u91D1\u5C5E ${runMetal}  \xB7  \u82AF\u7247 ${runChips}`;
+      this.title.text = this.compact ? altitude : "搭建火箭";
+      this.velocity.text = "↑ " + Math.round(velocityMps) + " m/s";
+      this.runInfo.text = `金属 ${runMetal}  ·  芯片 ${runChips}`;
     }
     setAccountSummary(marsCoins, metal, chips, bestMeters) {
-      this.runInfo.text = `\u5386\u53F2\u9AD8\u5EA6 ${this.formatAltitude(bestMeters)}  \xB7  \u706B\u661F\u5E01 ${marsCoins}
-\u91D1\u5C5E ${metal}  \xB7  \u82AF\u7247 ${chips}`;
+      this.runInfo.text = `历史高度 ${this.formatAltitude(bestMeters)}  ·  火星币 ${marsCoins}`;
     }
     renderFuel(stage, fuelRatio) {
       this.fuel.visible = true;
@@ -3310,38 +3419,38 @@ var __MARS_ENTRY__ = (() => {
       const filled = Math.round(
         clamped * 10
       );
-      const bar = "\u25A0".repeat(filled) + "\u25A1".repeat(
+      const bar = "■".repeat(filled) + "□".repeat(
         10 - filled
       );
-      this.fuel.text = `${stage === 1 ? "\u4E00\u7EA7" : "\u4E8C\u7EA7"}\u71C3\u6599  ${Math.round(clamped * 100)}%`;
+      this.fuel.text = `${stage === 1 ? "一级" : "二级"}燃料  ${Math.round(clamped * 100)}%`;
       this.drawFuelBar(clamped);
     }
     renderHealth(hp, maxHp) {
       this.health.visible = true;
-      const hearts = "\u2665".repeat(
+      const hearts = "♥".repeat(
         Math.max(
           0,
           hp
         )
       );
-      const empty = "\u2661".repeat(
+      const empty = "♡".repeat(
         Math.max(
           0,
           maxHp - hp
         )
       );
-      this.health.text = `\u706B\u7BAD\u8010\u4E45 ${hearts}${empty} ${hp}/${maxHp}`;
+      this.health.text = `火箭耐久 ${hearts}${empty} ${hp}/${maxHp}`;
     }
     setBuildingHint() {
       this.hint.visible = true;
-      this.hint.text = "\u5DE6\u53F3\u62D6\u52A8\u6A21\u5757\uFF0C\u677E\u624B\u843D\u4E0B";
+      this.hint.text = "左右拖动模块，松手落下";
     }
     formatAltitude(meters) {
       return meters >= 1e3 ? `${(meters / 1e3).toFixed(2)} km` : `${Math.floor(meters)} m`;
     }
   };
 
-  // source/assets/scripts/prototype/RocketModule.ts
+  // assets/scripts/prototype/RocketModule.ts
   var RocketModule = class {
     constructor(definition, x, y, index, level, baseLevel) {
       this.definition = definition;
@@ -3368,10 +3477,11 @@ var __MARS_ENTRY__ = (() => {
       );
       this.drawModule(definition.width, definition.height);
       const label = this.label = new Laya.Text();
-      label.text = `${definition.label}  Lv.${level}${this.isLucky ? " \u2726" : ""}`;
+      label.text = `${definition.label}  Lv.${level}${this.isLucky ? " ✦" : ""}`;
       label.color = "#FFFFFF";
       label.stroke = 2;
       label.strokeColor = "#142840";
+      label.font = MissionUi.font;
       label.fontSize = definition.width < 150 ? 17 : 19;
       label.bold = true;
       label.align = "center";
@@ -3388,11 +3498,11 @@ var __MARS_ENTRY__ = (() => {
       node.addChild(ribbon);
       node.addChild(label);
       const plume = this.exhaust.graphics;
-      plume.drawCircle(0, 6, 39, "#75DFFF44");
-      plume.drawPoly(0, 0, [-38, -5, -29, 23, -20, 75, 0, 196, 20, 75, 29, 23, 38, -5], "#F16B37");
-      plume.drawPoly(0, 0, [-27, -5, -16, 28, -11, 77, 0, 163, 11, 77, 16, 28, 27, -5], "#FFAD49");
-      plume.drawPoly(0, 0, [-14, -5, -9, 32, -5, 78, 0, 128, 5, 78, 9, 32, 14, -5], "#FFF7CE");
-      plume.drawCircle(0, 2, 18, "#DDFBFF");
+      const texture = MissionUi.texture("thrust_v7");
+      if (texture) {
+        const width = 96, height = width * texture.height / texture.width;
+        plume.drawTexture(texture, -width / 2, -8, width, height);
+      }
       this.exhaust.visible = false;
       this.exhaust.mouseEnabled = false;
       node.addChild(this.exhaust);
@@ -3516,7 +3626,7 @@ var __MARS_ENTRY__ = (() => {
     }
   };
 
-  // source/assets/scripts/prototype/UpgradePanel.ts
+  // assets/scripts/prototype/UpgradePanel.ts
   var UpgradePanel = class {
     constructor(root) {
       this.root = root;
@@ -3537,11 +3647,11 @@ var __MARS_ENTRY__ = (() => {
       const panel = this.container = new Laya.Sprite();
       panel.size(w, h);
       this.root.addChild(panel);
-      MissionUi.text(panel, settlement.newRecord ? "\u65B0\u7EAA\u5F55\uFF01" : "\u672C\u6B21\u9AD8\u5EA6", 0, 112, w, 54, 39, "#FFE3A1", true);
+      MissionUi.text(panel, settlement.newRecord ? "新纪录！" : "本次高度", 0, 112, w, 54, 39, "#FFE3A1", true);
       const altitude = MissionUi.text(panel, this.formatAltitude(settlement.altitudeMeters), 20, 177, w - 40, 139, 96, "#FFD35F", true);
       altitude.stroke = 4;
       altitude.strokeColor = "#71351A";
-      MissionUi.text(panel, `\u5386\u53F2\u6700\u9AD8 ${this.formatAltitude(progress.bestAltitudeMeters)}`, 0, 328, w, 42, 26, "#EFF5FF", true);
+      MissionUi.text(panel, `历史最高 ${this.formatAltitude(progress.bestAltitudeMeters)}`, 0, 328, w, 42, 26, "#EFF5FF", true);
       const rewardY = h - 600;
       const mascot = new Laya.Sprite();
       mascot.name = "result_astronaut";
@@ -3553,23 +3663,23 @@ var __MARS_ENTRY__ = (() => {
       reward.size(rw, 185).pos((w - rw) / 2, rewardY);
       MissionUi.panel(reward.graphics, rw, 185);
       panel.addChild(reward);
-      MissionUi.text(reward, "\u83B7\u5F97\u5956\u52B1", 0, 12, rw, 36, 28, "#FFE3A1", true);
-      const items = [{ name: "coin", label: "\u706B\u661F\u5E01", value: settlement.marsCoinsEarned }, { name: "metal", label: "\u91D1\u5C5E", value: settlement.metalEarned }, { name: "chip", label: "\u82AF\u7247", value: settlement.chipsEarned }];
+      MissionUi.text(reward, "获得奖励", 0, 12, rw, 36, 28, "#FFE3A1", true);
+      const items = [{ name: "coin", label: "火星币", value: settlement.marsCoinsEarned }, { name: "metal", label: "金属", value: settlement.metalEarned }, { name: "chip", label: "芯片", value: settlement.chipsEarned }];
       items.forEach((item, i) => {
         const x = i * rw / 3;
         MissionUi.picture(reward, item.name, x + rw / 6 - 28, 53, 56, 56);
         MissionUi.text(reward, item.label, x, 110, rw / 3, 29, 23, "#E6F1FF", true);
         MissionUi.text(reward, `+${item.value}`, x, 140, rw / 3, 39, 32, "#FFE08B", true);
       });
-      const research = MissionUi.button("\u79D1\u7814\u5347\u7EA7", 280, 88);
+      const research = MissionUi.button("科研升级", 280, 88);
       research.pos((w - 280) / 2, rewardY + 198);
       research.on(Laya.Event.CLICK, this, () => this.showUpgradeDetails(settlement, progress, options, onUpgrade, onReplay, () => this.show(settlement, progress, options, onUpgrade, onReplay, onHome)));
       panel.addChild(research);
-      const replay = MissionUi.button("\u518D\u6765\u4E00\u679A", 560, 112, true);
+      const replay = MissionUi.button("再来一枚", 560, 112, true);
       replay.pos((w - 560) / 2, h - 300);
       replay.once(Laya.Event.CLICK, this, onReplay);
       panel.addChild(replay);
-      const home = MissionUi.button("\u8FD4\u56DE\u9996\u9875", 450, 92);
+      const home = MissionUi.button("返回首页", 450, 92);
       home.pos((w - 450) / 2, h - 164);
       home.once(Laya.Event.CLICK, this, onHome);
       panel.addChild(home);
@@ -3614,7 +3724,7 @@ var __MARS_ENTRY__ = (() => {
       );
       this.addText(
         panel,
-        settlement.newRecord ? "\u65B0\u7EAA\u5F55\uFF01" : "\u672C\u6B21\u8FDC\u5F81\u7ED3\u675F",
+        settlement.newRecord ? "新纪录！" : "本次远征结束",
         0,
         28,
         width,
@@ -3636,7 +3746,7 @@ var __MARS_ENTRY__ = (() => {
       );
       this.addText(
         panel,
-        `\u672C\u5C40 +\u706B\u661F\u5E01 ${settlement.marsCoinsEarned}  +\u91D1\u5C5E ${settlement.metalEarned}  +\u82AF\u7247 ${settlement.chipsEarned}`,
+        `本局 +火星币 ${settlement.marsCoinsEarned}  +金属 ${settlement.metalEarned}  +芯片 ${settlement.chipsEarned}`,
         0,
         170,
         width,
@@ -3647,7 +3757,7 @@ var __MARS_ENTRY__ = (() => {
       );
       this.addText(
         panel,
-        `\u6301\u6709\uFF1A\u706B\u661F\u5E01 ${progress.marsCoins} \xB7 \u91D1\u5C5E ${progress.metal} \xB7 \u82AF\u7247 ${progress.chips}`,
+        `持有：火星币 ${progress.marsCoins} · 金属 ${progress.metal} · 芯片 ${progress.chips}`,
         0,
         214,
         width,
@@ -3658,7 +3768,7 @@ var __MARS_ENTRY__ = (() => {
       );
       this.addText(
         panel,
-        "\u6C38\u4E45\u5347\u7EA7",
+        "永久升级",
         0,
         284,
         width,
@@ -3680,7 +3790,7 @@ var __MARS_ENTRY__ = (() => {
         y += 118;
       }
       const replay = this.createButton(
-        "\u518D\u6765\u4E00\u679A",
+        "再来一枚",
         410,
         95,
         "#2C7ED1"
@@ -3697,7 +3807,7 @@ var __MARS_ENTRY__ = (() => {
       panel.addChild(
         replay
       );
-      const home = MissionUi.button("\u8FD4\u56DE\u7ED3\u7B97", 360, 76);
+      const home = MissionUi.button("返回结算", 360, 76);
       home.pos((width - 360) / 2, height - 98);
       home.once(Laya.Event.CLICK, this, onHome);
       panel.addChild(home);
@@ -3734,7 +3844,7 @@ var __MARS_ENTRY__ = (() => {
         "left"
       );
       const maxed = option.level >= option.maxLevel;
-      const costText = maxed ? "\u540C\u7C7B\u6A21\u5757\u6700\u4F4E Lv.5" : `\u9700\u8981 ${option.cost.marsCoins}\u5E01 / ${option.cost.metal}\u91D1\u5C5E / ${option.cost.chips}\u82AF\u7247`;
+      const costText = maxed ? "同类模块最低 Lv.5" : `需要 ${option.cost.marsCoins}币 / ${option.cost.metal}金属 / ${option.cost.chips}芯片`;
       this.addText(
         row,
         costText,
@@ -3749,7 +3859,7 @@ var __MARS_ENTRY__ = (() => {
       );
       this.addText(
         row,
-        maxed ? "\u6BCF\u6B21\u518D\u9020\u90FD\u4FDD\u7559\u6C38\u4E45\u5347\u7EA7" : upgradeBenefit(option.key, option.level),
+        maxed ? "每次再造都保留永久升级" : upgradeBenefit(option.key, option.level),
         18,
         70,
         width - 36,
@@ -3760,7 +3870,7 @@ var __MARS_ENTRY__ = (() => {
         "left"
       );
       const button = this.createButton(
-        maxed ? "\u6EE1\u7EA7" : "\u5347\u7EA7",
+        maxed ? "满级" : "升级",
         118,
         48,
         option.canUpgrade ? "#2D8B65" : "#4B5665"
@@ -3781,7 +3891,12 @@ var __MARS_ENTRY__ = (() => {
       );
     }
     createButton(textValue, width, height, color) {
-      return MissionUi.button(textValue, width, height, textValue === "\u518D\u6765\u4E00\u679A");
+      const button = MissionUi.button(textValue, width, height, textValue === "再来一枚");
+      if (color === "#4B5665") {
+        button.alpha = 0.48;
+        button.mouseEnabled = false;
+      }
+      return button;
     }
     addText(parent, textValue, x, y, width, height, fontSize, color, bold, align = "center") {
       const text = new Laya.Text();
@@ -3809,7 +3924,7 @@ var __MARS_ENTRY__ = (() => {
     }
   };
 
-  // source/assets/scripts/prototype/BuildStructure.ts
+  // assets/scripts/prototype/BuildStructure.ts
   function supportedBy(upper, lower, tolerance = 8) {
     if (upper.y >= lower.y) return false;
     const corners = (r) => {
@@ -3859,7 +3974,7 @@ var __MARS_ENTRY__ = (() => {
     });
   }
 
-  // source/assets/scripts/prototype/BuildPrototype.ts
+  // assets/scripts/prototype/BuildPrototype.ts
   var BuildPrototype = class {
     constructor() {
       this.elapsedAccumulatorMs = 0;
@@ -3899,6 +4014,7 @@ var __MARS_ENTRY__ = (() => {
       this.rocketHp = GameConfig.rocketMaxHp;
       this.damageCooldownMs = 0;
       this.runAltitudeMeters = 0;
+      this.ascent = new FlightAscentModel();
       this.runMetal = 0;
       this.runChips = 0;
       this.recordTargetMeters = 0;
@@ -4023,20 +4139,10 @@ var __MARS_ENTRY__ = (() => {
         w / 2,
         this.platformY
       );
-      platform.graphics.drawRect(
-        -GameConfig.platformWidth / 2,
-        -GameConfig.platformHeight / 2,
-        GameConfig.platformWidth,
-        GameConfig.platformHeight,
-        "#23374D",
-        "#83C8E7",
-        2
-      );
-      const deckWidth = GameConfig.platformWidth, deckHeight = GameConfig.platformHeight;
-      platform.graphics.drawRect(-deckWidth / 2 + 3, -deckHeight / 2 + 3, deckWidth - 6, 7, "#A7BACA");
-      platform.graphics.drawLine(-deckWidth / 2, -deckHeight / 2, deckWidth / 2, -deckHeight / 2, "#FFE4A3", 4);
-      for (let x = -deckWidth / 2 + 22; x < deckWidth / 2 - 12; x += 54) {
-        platform.graphics.drawLine(x, deckHeight / 2 - 5, x + 24, deckHeight / 2 - 5, "#55CFFD", 3);
+      const platformArt = MissionUi.texture("platform_v7");
+      if (platformArt) {
+        const w2 = GameConfig.platformWidth, h2 = w2 * platformArt.height / platformArt.width;
+        platform.graphics.drawTexture(platformArt, -w2 / 2, -GameConfig.platformHeight / 2, w2, h2);
       }
       this.world.addChild(
         platform
@@ -4255,14 +4361,10 @@ var __MARS_ENTRY__ = (() => {
         );
       }
       this.routes.update(dt);
-      this.backdrop.update(
-        dt,
-        this.getBackdropScrollSpeed(),
-        this.runAltitudeMeters
-      );
       this.obstacleManager.update(dt);
       this.pickupManager.update(dt);
       this.updateRunAltitude(dt);
+      this.backdrop.update(dt, this.getBackdropScrollSpeed(), this.runAltitudeMeters);
       if (this.phase === "building" /* Building */) {
         this.updateBuilding(dt);
         return;
@@ -4286,20 +4388,22 @@ var __MARS_ENTRY__ = (() => {
       if (!this.runStats) {
         return;
       }
-      let rate = 0;
+      let phase = null;
+      let engine = 1;
       if (this.phase === "stage1_flight" /* Stage1Flight */) {
-        rate = GameConfig.stage1AltitudeMetersPerSecond * this.runStats.stage1EngineMultiplier;
+        phase = "stage1";
+        engine = this.runStats.stage1EngineMultiplier;
       } else if (this.phase === "stage_separation" /* StageSeparation */) {
-        rate = GameConfig.stageSeparationAltitudeMetersPerSecond;
+        phase = "separation";
       } else if (this.phase === "stage2_flight" /* Stage2Flight */) {
-        rate = GameConfig.stage2AltitudeMetersPerSecond * this.runStats.stage2EngineMultiplier;
+        phase = "stage2";
+        engine = this.runStats.stage2EngineMultiplier;
       } else if (this.phase === "astronaut_flight" /* AstronautFlight */) {
-        rate = GameConfig.astronautAltitudeMetersPerSecond;
+        phase = "astronaut";
       }
-      if (rate <= 0) {
-        return;
-      }
-      this.runAltitudeMeters += rate * dt / 1e3;
+      if (!phase) return;
+      this.ascent.advance(phase, dt, engine);
+      this.runAltitudeMeters = this.ascent.altitudeMeters;
       if (!this.newRecordDuringRun && this.runAltitudeMeters > this.recordTargetMeters) {
         this.newRecordDuringRun = true;
       }
@@ -4393,11 +4497,11 @@ var __MARS_ENTRY__ = (() => {
         module.node
       );
       syncBodyToNode(module.body);
-      const luckyText = roll.bonusLevel > 0 ? ` \u2726 +${roll.bonusLevel}` : "";
+      const luckyText = roll.bonusLevel > 0 ? ` ✦ +${roll.bonusLevel}` : "";
       this.hud.setProgress(
         this.modules.length,
         GameConfig.modules.length,
-        `\u4E0B\u4E00\u5757\uFF1A${definition.label} Lv.${roll.level}${luckyText} \xB7 ${this.modules.length}/${GameConfig.modules.length}`
+        `下一块：${definition.label} Lv.${roll.level}${luckyText} · ${this.modules.length}/${GameConfig.modules.length}`
       );
       this.refreshAccountHud();
     }
@@ -4481,7 +4585,7 @@ var __MARS_ENTRY__ = (() => {
       );
       PlatformManager.current.vibrate("medium");
       this.showActionButton(
-        "\u70B9\u706B\u53D1\u5C04",
+        "点火发射",
         () => this.launchRocket()
       );
     }
@@ -4502,14 +4606,16 @@ var __MARS_ENTRY__ = (() => {
       const ignitionNode = (_a = this.modules[0]) == null ? void 0 : _a.node;
       if (ignitionNode) {
         (_c = (_b = this.feedback) == null ? void 0 : _b.ring) == null ? void 0 : _c.call(_b, ignitionNode.x, ignitionNode.y, "#FFBD6B");
-        (_e = (_d = this.feedback) == null ? void 0 : _d.show) == null ? void 0 : _e.call(_d, Laya.stage.width / 2, 475, "\u70B9\u706B\u6210\u529F\uFF01", "#FFE2A3", "major");
+        (_e = (_d = this.feedback) == null ? void 0 : _d.show) == null ? void 0 : _e.call(_d, Laya.stage.width / 2, 475, "点火成功！", "#FFE2A3", "major");
       }
+      this.backdrop.reset();
       this.backdrop.setVisible(true);
       if (this.buildBackdrop) this.buildBackdrop.visible = false;
       this.destroyActionButton();
       this.rocketHp = GameConfig.rocketMaxHp;
       this.damageCooldownMs = 0;
       this.runAltitudeMeters = 0;
+      this.ascent.reset();
       this.runMetal = 0;
       this.runChips = 0;
       this.newRecordDuringRun = false;
@@ -4582,7 +4688,7 @@ var __MARS_ENTRY__ = (() => {
       const joint = (_a = this.modules[2]) == null ? void 0 : _a.node;
       if (joint) {
         (_c = (_b = this.feedback) == null ? void 0 : _b.ring) == null ? void 0 : _c.call(_b, joint.x, joint.y, "#8EDAFF");
-        (_e = (_d = this.feedback) == null ? void 0 : _d.show) == null ? void 0 : _e.call(_d, Laya.stage.width / 2, 460, "\u4E00\u7EA7\u5206\u79BB\uFF01", "#D0F3FF", "major");
+        (_e = (_d = this.feedback) == null ? void 0 : _d.show) == null ? void 0 : _e.call(_d, Laya.stage.width / 2, 460, "一级分离！", "#D0F3FF", "major");
       }
       (_f = this.flight) == null ? void 0 : _f.setInput(0);
       this.obstacleManager.setMode(null);
@@ -4601,7 +4707,7 @@ var __MARS_ENTRY__ = (() => {
       const thruster = (_a = this.modules[2]) == null ? void 0 : _a.node;
       if (thruster) {
         (_c = (_b = this.feedback) == null ? void 0 : _b.ring) == null ? void 0 : _c.call(_b, thruster.x, thruster.y, "#FFC36F");
-        (_e = (_d = this.feedback) == null ? void 0 : _d.show) == null ? void 0 : _e.call(_d, Laya.stage.width / 2, 470, "\u4E8C\u7EA7\u70B9\u706B\uFF01", "#FFE4B0", "major");
+        (_e = (_d = this.feedback) == null ? void 0 : _d.show) == null ? void 0 : _e.call(_d, Laya.stage.width / 2, 470, "二级点火！", "#FFE4B0", "major");
       }
       this.buildMetrics = this.assembly.calculateMetrics(this.modules[2].node.x);
       this.resumeHeldControl();
@@ -4718,7 +4824,7 @@ var __MARS_ENTRY__ = (() => {
       this.routes.setMode(null);
       const spawn = this.assembly.getEscapeSpawnPoint();
       (_c = (_b = this.feedback) == null ? void 0 : _b.ring) == null ? void 0 : _c.call(_b, spawn.x, spawn.y, "#B9EFFF");
-      (_e = (_d = this.feedback) == null ? void 0 : _d.show) == null ? void 0 : _e.call(_d, Laya.stage.width / 2, 465, "\u7D27\u6025\u5F39\u5C04\uFF01", "#CBF6FF", "major");
+      (_e = (_d = this.feedback) == null ? void 0 : _d.show) == null ? void 0 : _e.call(_d, Laya.stage.width / 2, 465, "紧急弹射！", "#CBF6FF", "major");
       const drift = (_g = (_f = this.buildMetrics) == null ? void 0 : _f.drift) != null ? _g : 0;
       this.assembly.releaseActiveAsWreck(
         motion.horizontalVelocity,
@@ -4830,10 +4936,10 @@ var __MARS_ENTRY__ = (() => {
     createUpgradeOptions() {
       const progress = this.progressStore.snapshot;
       const labels = {
-        engine: "\u53D1\u52A8\u673A",
-        fuel: "\u71C3\u6599\u4ED3",
-        cockpit: "\u9A7E\u9A76\u8231",
-        escape: "\u9003\u751F\u8231"
+        engine: "发动机",
+        fuel: "燃料仓",
+        cockpit: "驾驶舱",
+        escape: "逃生舱"
       };
       const keys = [
         "engine",
@@ -4896,6 +5002,7 @@ var __MARS_ENTRY__ = (() => {
       this.rocketHp = GameConfig.rocketMaxHp;
       this.lastControlInput = 0;
       this.runAltitudeMeters = 0;
+      this.ascent.reset();
       this.runMetal = 0;
       this.runChips = 0;
       this.newRecordDuringRun = false;
@@ -4911,7 +5018,8 @@ var __MARS_ENTRY__ = (() => {
         this.recordTargetMeters,
         this.runMetal,
         this.runChips,
-        this.newRecordDuringRun
+        this.newRecordDuringRun,
+        this.ascent.velocityMetersPerSecond
       );
     }
     refreshAccountHud() {
@@ -4998,61 +5106,23 @@ var __MARS_ENTRY__ = (() => {
       var _a;
       const module = this.modules.find((m) => m.node.name === hit.targetNodeName);
       const node = hit.target === "astronaut" ? (_a = this.astronaut) == null ? void 0 : _a.node : module == null ? void 0 : module.node;
-      const labels = { fuel: "\u71C3\u6599 +6\u79D2", metal: "\u91D1\u5C5E +1", chip: "\u82AF\u7247 +1", suit_energy: "\u80FD\u6E90 +5\u79D2" };
-      const label = hit.type === "fuel" && this.phase === "stage2_flight" /* Stage2Flight */ ? "\u71C3\u6599 +4\u79D2" : labels[hit.type];
+      const labels = { fuel: "燃料 +6秒", metal: "金属 +1", chip: "芯片 +1", suit_energy: "能源 +5秒" };
+      const label = hit.type === "fuel" && this.phase === "stage2_flight" /* Stage2Flight */ ? "燃料 +4秒" : labels[hit.type];
       if (node) this.feedback.show(node.x, node.y - 65, label, hit.type === "chip" ? "#DBC9FF" : "#C7F3DE");
       GameAudio.play("pickup");
     }
     getBackdropScrollSpeed() {
-      var _a, _b, _c, _d;
-      const multiplier = this.phase === "stage1_flight" /* Stage1Flight */ ? (_b = (_a = this.runStats) == null ? void 0 : _a.stage1EngineMultiplier) != null ? _b : 1 : this.phase === "stage2_flight" /* Stage2Flight */ ? (_d = (_c = this.runStats) == null ? void 0 : _c.stage2EngineMultiplier) != null ? _d : 1 : 1;
-      if (this.phase === "stage1_flight" /* Stage1Flight */) {
-        return 72 * multiplier;
-      }
-      if (this.phase === "stage_separation" /* StageSeparation */) {
-        return 46;
-      }
-      if (this.phase === "stage2_flight" /* Stage2Flight */) {
-        return 104 * multiplier;
-      }
-      if (this.phase === "astronaut_flight" /* AstronautFlight */) {
-        return 82;
+      if (this.phase === "stage1_flight" /* Stage1Flight */ || this.phase === "stage2_flight" /* Stage2Flight */ || this.phase === "stage_separation" /* StageSeparation */ || this.phase === "astronaut_flight" /* AstronautFlight */) {
+        return Math.min(230, 38 + this.ascent.velocityMetersPerSecond * 0.17);
       }
       return 0;
     }
     showActionButton(labelText, onClick) {
       this.destroyActionButton();
-      const button = this.actionButton = new Laya.Sprite();
-      const width = 390;
-      const height = 94;
+      const width = 390, height = 94;
+      const button = this.actionButton = MissionUi.button(labelText, width, height, true);
       button.name = "prototype_action_button";
-      button.size(
-        width,
-        height
-      );
-      button.pivot(
-        width / 2,
-        height / 2
-      );
-      button.pos(
-        Laya.stage.width / 2,
-        Laya.stage.height - 64
-      );
-      const buttonTexture = MissionUi.texture("button_gold");
-      if (buttonTexture) button.graphics.draw9Grid(buttonTexture, 0, 0, width, height, [32, 94, 32, 94, 0]);
-      button.mouseEnabled = true;
-      const text = new Laya.Text();
-      text.text = labelText;
-      text.color = "#572909";
-      text.fontSize = 34;
-      text.bold = true;
-      text.align = "center";
-      text.valign = "middle";
-      text.size(
-        width,
-        height
-      );
-      button.addChild(text);
+      button.pivot(width / 2, height / 2).pos(Laya.stage.width / 2, Laya.stage.height - 64);
       this.root.addChild(button);
       button.on(
         Laya.Event.CLICK,
@@ -5123,177 +5193,7 @@ var __MARS_ENTRY__ = (() => {
     }
   };
 
-
-  // 2026-10-11 compiled runtime patch, applied to last official LayaAir 3.4 Web build.
-  (() => {
-    const clamp=(v,min,max)=>Math.min(max,Math.max(min,v));
-    const polygon=(x,y,w,h,r)=>{
-      const p=[];r=clamp(r,2,Math.min(w,h)/2);
-      for(const [cx,cy,start] of [[x+w-r,y+r,-90],[x+w-r,y+h-r,0],[x+r,y+h-r,90],[x+r,y+r,180]])
-        for(let i=0;i<=6;i++){const a=(start+i*15)*Math.PI/180;p.push(cx+Math.cos(a)*r,cy+Math.sin(a)*r)}
-      return p;
-    };
-    const rounded=(g,x,y,w,h,r,c,stroke=null,border=0)=>g.drawPoly(0,0,polygon(x,y,w,h,r),c,stroke,border);
-    MissionUi.button=(value,w,h,gold=false)=>{
-      const node=new Laya.Sprite();node.name="ui_button_"+value;node.size(w,h);node.mouseEnabled=true;
-      const g=node.graphics,small=w<190,r=Math.min(h*.40,small?17:38);
-      rounded(g,3,6,w-6,h-7,r,gold?"#9A4A0A":"#123F7C");
-      rounded(g,2,1,w-4,h-9,r,gold?"#FFE7A0":"#7EEAFF");
-      rounded(g,5,4,w-10,h-15,r-3,gold?"#FFC64E":small?"#175E9D":"#167AB8");
-      rounded(g,8,6,w-16,Math.max(8,(h-16)*.43),Math.min(r-4,h*.19),gold?"#FFE18A":"#3BB8EA");
-      if(h>=68){const x=Math.min(37,w*.11);g.drawRect(x,8,w-x*2,2,gold?"#FFF6D8":"#B9F8FF")}
-      const len=Array.from(value).length;
-      const font=Math.max(17,Math.min(39,Math.floor(h*.41),Math.floor((w-(small?18:45))/Math.max(1,len*.94))));
-      const t=MissionUi.text(node,value,9,-4,w-18,h-5,font,gold?"#663408":"#FFFFFF",true);
-      t.strokeColor=gold?"#FFEBC2":"#0D3E63";t.stroke=font>=27?1.3:.8;
-      node.on(Laya.Event.MOUSE_DOWN,node,()=>node.alpha=.84);
-      node.on(Laya.Event.MOUSE_UP,node,()=>node.alpha=1);
-      node.on(Laya.Event.MOUSE_OUT,node,()=>node.alpha=1);
-      return node;
-    };
-    MissionUi.panel=(g,w,h)=>{
-      g.clear();
-      const texture=MissionUi.texture("panel");
-      if(h>=165&&w>=250&&texture){g.draw9Grid(texture,0,0,w,h,[42,42,42,42,0]);return}
-      const r=Math.min(20,h*.16);
-      rounded(g,0,3,w,h-3,r,"#051329","#2B70A4",2);
-      rounded(g,2,2,w-4,h-8,r,"#102D50","#59B9EF",2);
-      g.drawRect(r+14,5,Math.max(0,w-2*(r+14)),2,"#7BDCF5");
-    };
-    FlightBackdropController.prototype.layoutIllustration=function(){this.illustratedAtmosphere.graphics.clear()};
-    const heights=[0,1200,5200,13000,30000,65000,105000];
-    const palettes=[
-      ["#145487","#99D8F5","#F7DCB8"],["#1767A5","#74C9F4","#E6F7FF"],
-      ["#1263AA","#67B9EE","#E5F8FF"],["#092859","#317ABE","#B1DFFC"],
-      ["#071C41","#1D528E","#6FB8E7"],["#02091F","#0B2050","#3175B5"],
-      ["#020711","#071B3E","#1B4474"]
-    ];
-    const blend=(a,b,t)=>"#"+[1,3,5].map(i=>
-      Math.round(parseInt(a.slice(i,i+2),16)*(1-t)+parseInt(b.slice(i,i+2),16)*t)
-        .toString(16).padStart(2,"0")).join("");
-    const oval=(g,x,y,w,h,color)=>{
-      const p=[];for(let i=0;i<28;i++){const a=i*2*Math.PI/28;p.push(x+w*.5+Math.cos(a)*w*.5,y+h*.5+Math.sin(a)*h*.5)}
-      g.drawPoly(0,0,p,color);
-    };
-    const cloud=(g,x,y,s)=>{
-      oval(g,x-100*s,y,200*s,55*s,"#B6DFF0");
-      oval(g,x-100*s,y-7*s,200*s,52*s,"#F0FAFF");
-      for(const [dx,dy,r] of [[-46,-10,38],[11,-25,49],[57,-4,36]])g.drawCircle(x+dx*s,y+dy*s,r*s,"#F7FCFF");
-    };
-    const plane=(g,x,y,s)=>{
-      const p=[-68,0,-10,-5,30,-54,45,-52,23,-4,78,2,84,13,22,11,33,31,20,32,-13,12,-65,9].map(v=>v*s);
-      g.drawPoly(x,y,p,"#F5FBFF","#88B5D3",2);
-    };
-    const paint=(g,band)=>{
-      const w=Laya.stage.width,h=Laya.stage.height;
-      g.clear();
-      const texture=MissionUi.texture(band===0?"hangar":"flight");
-      if((band===0||band===6)&&texture){
-        const scale=Math.max(w/texture.width,(h+(band===0?240:0))/texture.height);
-        g.drawTexture(texture,(w-texture.width*scale)/2,band===0?-220:(h-texture.height*scale)/2,
-          texture.width*scale,texture.height*scale);
-        return;
-      }
-      const pal=palettes[band];
-      for(let i=0;i<40;i++){
-        const t=i/39,low=t<.55;
-        g.drawRect(0,Math.floor(i*h/40),w,Math.ceil(h/40)+2,
-          blend(pal[low?0:1],pal[low?1:2],low?t/.55:(t-.55)/.45));
-      }
-      if(band===0){
-        g.drawRect(0,h*.85,w,h*.15,"#334B63");
-        for(let i=0;i<20;i++){const bh=60+(i*59)%190;g.drawRect(i*w/19,h*.85-bh,30+(i*13)%25,bh,"#496A83")}
-      }
-      if(band===1){
-        for(let k=0;k<3;k++){
-          const y=h*(.68+k*.095);
-          g.drawPoly(0,0,[0,h,0,y+80,w*.10,y+40,w*.28,y-105,w*.42,y+25,w*.56,y-68,w*.74,y+55,w*.85,y-110,w,y+32,w,h],
-            ["#A4C6DB","#648DAC","#2A4E6F"][k]);
-          if(k===0)g.drawPoly(0,0,[w*.28,y-105,w*.23,y-22,w*.33,y-45,w*.42,y+25],"#F1F8FF");
-        }
-      }
-      if(band>=1&&band<=3){
-        const n=band===2?12:band===1?5:9;
-        for(let i=0;i<n;i++)
-          cloud(g,w*((i*.271+.12)%1),h*(band===3?.74+(i%4)*.066:.18+(i*.139)% .62),
-            band===2?.85+(i%4)*.20:.50+(i%3)*.17);
-        if(band===2){plane(g,w*.72,h*.39,1.1);plane(g,w*.16,h*.65,.7)}
-      }
-      if(band>=4){
-        oval(g,-w*.45,h*.9-22,w*1.9,h*.60,"#77C4EB");
-        oval(g,-w*.45,h*.9+8,w*1.9,h*.61,band===4?"#407AB2":"#163966");
-        for(let i=0;i<30;i++)g.drawCircle((i*137)%w,(i*211)%Math.floor(h*.72),i%6===0?2:1,"#DBEDFF");
-      }
-    };
-    FlightBackdropController.prototype.drawTheme=function(altitude){
-      const height=Math.max(0,altitude);let band=heights.length-1;
-      for(let i=0;i<heights.length-1;i++)if(height<heights[i+1]){band=i;break}
-      const next=Math.min(heights.length-1,band+1);
-      const t=band===next?0:clamp((height-heights[band])/(heights[next]-heights[band]),0,1);
-      if(!this._upperSky){this._upperSky=new Laya.Sprite();this._upperSky.mouseEnabled=false;this.scenery.addChild(this._upperSky)}
-      if(this.band!==band){paint(this.scenery.graphics,band);this.band=band}
-      if(this._secondBand!==next){paint(this._upperSky.graphics,next);this._secondBand=next}
-      this._upperSky.alpha=band===next?0:t*t*(3-2*t);
-      this.scenery.y=band===0?Math.min(190,height*.16):0;
-    };
-    const resize=FlightBackdropController.prototype.resize;
-    FlightBackdropController.prototype.resize=function(){this.band=-1;this._secondBand=-1;resize.call(this)};
-    const launch=BuildPrototype.prototype.launchRocket;
-    BuildPrototype.prototype.launchRocket=function(){
-      if(this.phase==="launch_ready"){
-        this._ascent=null;
-        if(this.backdrop){
-          this.backdrop.band=-1;this.backdrop._secondBand=-1;
-          this.backdrop.scenery.y=0;this.backdrop.drawTheme(0);
-        }
-      }
-      return launch.call(this);
-    };
-    GameConfig.milestoneStepMeters=2000;
-    BuildPrototype.prototype.updateRunAltitude=function(dt){
-      if(!this.runStats)return;
-      const map={stage1_flight:"stage1",stage_separation:"separation",stage2_flight:"stage2",astronaut_flight:"astronaut"};
-      const phase=map[this.phase];if(!phase)return;
-      const m=this._ascent||(this._ascent={h:0,v:0,phase:null,t:0});
-      if(phase!==m.phase){m.phase=phase;m.t=0}
-      const delta=clamp(dt/1000,0,.1);
-      const power=phase==="stage1"?this.runStats.stage1EngineMultiplier:
-        phase==="stage2"?this.runStats.stage2EngineMultiplier:1;
-      const acc=phase==="stage1"?(13+Math.min(15,m.t*.5))*power:
-        phase==="stage2"?(20+Math.min(25,m.t*1.1))*power:phase==="separation"?-7:-4;
-      const v=clamp(m.v+acc*delta,0,4200);
-      m.h+=(m.v+v)*.5*delta;m.v=v;m.t+=delta;
-      this.runAltitudeMeters=m.h;
-      if(!this.newRecordDuringRun&&m.h>this.recordTargetMeters)this.newRecordDuringRun=true;
-      const mile=Math.floor(m.h/GameConfig.milestoneStepMeters);
-      if(mile>this.milestone){
-        this.milestone=mile;this.hud.showMilestone(mile*GameConfig.milestoneStepMeters);
-        if(this.feedback)this.feedback.burst(Laya.stage.width/2,350,"#FFD58A","major");
-        GameAudio.play("record");
-      }
-      this.hudElapsedMs+=dt;
-      if(this.hudElapsedMs>=100){this.hudElapsedMs%=100;this.refreshRunHud()}
-    };
-    BuildPrototype.prototype.getBackdropScrollSpeed=function(){
-      if(["stage1_flight","stage_separation","stage2_flight","astronaut_flight"].includes(this.phase))
-        return Math.min(230,38+((this._ascent&&this._ascent.v)||0)*.17);
-      return 0;
-    };
-    const refresh=BuildPrototype.prototype.refreshRunHud;
-    BuildPrototype.prototype.refreshRunHud=function(){
-      refresh.call(this);
-      if(this.hud&&this.hud.compact){
-        const alt=this.runAltitudeMeters;
-        this.hud.title.fontSize=33;
-        this.hud.title.text=(alt>=1000?(alt/1000).toFixed(2)+" km":Math.floor(alt)+" m")+
-          " ↑"+Math.round((this._ascent&&this._ascent.v)||0)+"m/s";
-      }
-    };
-    GameplayArt.assetUrls=GameplayArt.assetUrls.filter(x=>!/(button_blue|button_gold)\.png/.test(x));
-    console.info("[Mars Preview] October 11 UI/ascent/atmosphere patch loaded");
-  })();
-
-  // source/assets/scripts/Entry.ts
+  // assets/scripts/Entry.ts
   Laya.addBeforeInitCallback(() => {
     Laya.Physics2DOption.customUpdate = true;
     Laya.Config.isAntialias = false;
@@ -5301,36 +5201,38 @@ var __MARS_ENTRY__ = (() => {
       Laya.Config.useRetinalCanvas = false;
     }
   });
-  async function main() {
-    var _a;
-    Laya.stage.bgColor = "#081426";
-    const isTouchMiniGame = !!globalThis.wx || !!globalThis.tt;
-    const mobileUA = /Android|iPhone|iPad|iPod|Mobile/i.test(((_a = globalThis.navigator) == null ? void 0 : _a.userAgent) || "");
-    let lastLayout = "";
-    const syncOrientation = () => {
-      const desktopLandscape = !isTouchMiniGame && !mobileUA && globalThis.innerWidth > globalThis.innerHeight;
-      const layout = desktopLandscape ? "desktop" : "portrait";
-      if (layout === lastLayout) return;
-      lastLayout = layout;
-      Laya.stage.screenMode = desktopLandscape ? Laya.Stage.SCREEN_NONE : Laya.Stage.SCREEN_VERTICAL;
-      Laya.stage.scaleMode = desktopLandscape ? Laya.Stage.SCALE_SHOWALL : Laya.Stage.SCALE_FIXED_AUTO;
-    };
-    syncOrientation();
-    Laya.stage.on(Laya.Event.RESIZE, null, syncOrientation);
-    Laya.stage.alignH = Laya.Stage.ALIGN_CENTER;
-    Laya.stage.alignV = Laya.Stage.ALIGN_MIDDLE;
-    await Laya.Physics2D.I.enable();
-    configurePhysicsCompatibility();
-    await GameplayArt.preload();
-    console.info(`[Mars Prototype] platform=${PlatformManager.current.name}`);
-    const prototype = new BuildPrototype();
-    prototype.mount(Laya.stage);
-    const location2 = globalThis.location;
-    if (location2 && (location2.hostname === "localhost" || location2.hostname === "127.0.0.1") && new URLSearchParams(location2.search).has("e2e")) {
-      globalThis.__MARS_GAME__ = prototype;
-    }
+  function main() {
+    return __async(this, null, function* () {
+      var _a;
+      Laya.stage.bgColor = "#081426";
+      const isTouchMiniGame = !!globalThis.wx || !!globalThis.tt;
+      const mobileUA = /Android|iPhone|iPad|iPod|Mobile/i.test(((_a = globalThis.navigator) == null ? void 0 : _a.userAgent) || "");
+      let lastLayout = "";
+      const syncOrientation = () => {
+        const desktopLandscape = !isTouchMiniGame && !mobileUA && globalThis.innerWidth > globalThis.innerHeight;
+        const layout = desktopLandscape ? "desktop" : "portrait";
+        if (layout === lastLayout) return;
+        lastLayout = layout;
+        Laya.stage.screenMode = desktopLandscape ? Laya.Stage.SCREEN_NONE : Laya.Stage.SCREEN_VERTICAL;
+        Laya.stage.scaleMode = desktopLandscape ? Laya.Stage.SCALE_SHOWALL : Laya.Stage.SCALE_FIXED_AUTO;
+      };
+      syncOrientation();
+      Laya.stage.on(Laya.Event.RESIZE, null, syncOrientation);
+      Laya.stage.alignH = Laya.Stage.ALIGN_CENTER;
+      Laya.stage.alignV = Laya.Stage.ALIGN_MIDDLE;
+      yield Laya.Physics2D.I.enable();
+      configurePhysicsCompatibility();
+      yield GameplayArt.preload();
+      console.info(`[Mars Prototype] platform=${PlatformManager.current.name}`);
+      const prototype = new BuildPrototype();
+      prototype.mount(Laya.stage);
+      const location2 = globalThis.location;
+      if (location2 && (location2.hostname === "localhost" || location2.hostname === "127.0.0.1") && new URLSearchParams(location2.search).has("e2e")) {
+        globalThis.__MARS_GAME__ = prototype;
+      }
+    });
   }
-  return __toCommonJS(Entry_exports);
-})();
 
-window.$_main_=__MARS_ENTRY__.main;
+  // INDEX:bundle.js
+  window.$_main_ = main;
+})();
