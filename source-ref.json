@@ -1,4 +1,4 @@
 {
-  "sha": "14747bd80fd272e385c4bb84c1e75b1917ddaa45",
-  "reason": "Verify strict typed mechanical claw and tap-release assembly"
+  "sha": "27ae549b938dde607a8c262dc90004e0d696947f",
+  "reason": "Test moving claw and return-home restart using real touch input"
 }
