@@ -90,16 +90,28 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Restore official CLI cache
+        id: laya-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.layaair
+          key: mars-layaair-3.4.0-ubuntu-v1
       - name: Official CLI and screenshot dependencies
         run: |
-          curl -fsSL --retry 2 https://raw.githubusercontent.com/layabox/layaair-cli/master/install.sh | bash
-          "$HOME/.layaair/layaair" install 3.4.0
+          if [ ! -x "$HOME/.layaair/layaair" ]; then curl -fsSL --retry 2 https://raw.githubusercontent.com/layabox/layaair-cli/master/install.sh | bash; fi
+          if [ ! -d "$HOME/.layaair/3.4.0/Resources/engine/types" ]; then "$HOME/.layaair/layaair" install 3.4.0; fi
           "$HOME/.layaair/layaair" list
           sudo apt-get update -qq
           sudo apt-get install -y -qq fonts-noto-cjk
           cd source
           npm install --no-save --ignore-scripts typescript@5.9.2 playwright-core@1.55.0 > /dev/null
           ln -s "$HOME/.layaair/3.4.0/Resources/engine/types" engine
+      - name: Cache successfully installed official CLI
+        if: steps.laya-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.layaair
+          key: mars-layaair-3.4.0-ubuntu-v1
       - name: Real type check and rule regression
         working-directory: source
         run: |
