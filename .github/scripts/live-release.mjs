@@ -37,19 +37,14 @@ try{for(const view of [{width:390,height:844},{width:375,height:667}]){
   await tap('暂停');await waitLabel('继续远征');await page.screenshot({path:`live-qa/${id}-paused.png`});await tap('继续远征');
   for(let i=0;i<6;i++){
    await page.waitForFunction(i=>{function scan(n){if(!n.visible)return false;if(n.name?.startsWith('rocket_module_'+i+'_'))return true;for(let j=0;j<n.numChildren;j++)if(scan(n.getChildAt(j)))return true;return false;}return scan(Laya.stage);},i,{timeout:25000});
-   const p=await page.evaluate(i=>{function scan(n){if(!n.visible)return null;if(n.name?.startsWith('rocket_module_'+i+'_')){const p=n.localToGlobal(new Laya.Point(n.width/2,n.height/2));return{x:p.x/Laya.stage.width,y:p.y/Laya.stage.height};}for(let j=0;j<n.numChildren;j++){const p=scan(n.getChildAt(j));if(p)return p;}}return scan(Laya.stage);},i);
-   const cdp=await page.context().newCDPSession(page);
-   await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:p.x*view.width,y:p.y*view.height}]});
-   await page.waitForTimeout(70);
-   await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:view.width/2,y:p.y*view.height}]});
-   await page.waitForTimeout(70);
-   await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await cdp.detach();
+   await page.waitForFunction(i=>{function scan(n){if(!n.visible)return null;if(n.name?.startsWith('rocket_module_'+i+'_'))return n;for(let j=0;j<n.numChildren;j++){const p=scan(n.getChildAt(j));if(p)return p;}}const n=scan(Laya.stage);return n&&Math.abs(n.x-Laya.stage.width/2)<4;},i,{timeout:10000,polling:'raf'});
+   await page.touchscreen.tap(view.width*.12,view.height*.7);
   }
   await waitLabel('点火发射',25000);await page.screenshot({path:`live-qa/${id}-ready.png`});await tap('点火发射');
   await page.waitForFunction(()=>{function scan(n){if(!n.visible)return false;if(n.text?.startsWith('一级燃料'))return true;for(let i=0;i<n.numChildren;i++)if(scan(n.getChildAt(i)))return true;return false;}return scan(Laya.stage);});
   await page.waitForTimeout(500);await page.screenshot({path:`live-qa/${id}-flight.png`});
   await tap('暂停');await waitLabel('继续远征');await tap('继续远征');
-  await waitLabel('再来一枚',150000);await page.screenshot({path:`live-qa/${id}-result.png`});
+  await tap('暂停');await waitLabel('继续远征');await tap('返回首页');await waitLabel('开始造火箭');await page.screenshot({path:`live-qa/${id}-home-return.png`});
   assert.deepEqual(errors,[]);report.push({viewport:view,passed:true,layout,errors,sourceCommit:local.sourceCommit});
  }catch(e){report.push({viewport:view,passed:false,error:e.stack,errors});await page.screenshot({path:`live-qa/${id}-failed.png`}).catch(()=>{});throw e;}
  finally{await fs.writeFile('live-qa/report.json',JSON.stringify(report,null,2));await page.close();}

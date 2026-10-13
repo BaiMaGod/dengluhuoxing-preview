@@ -1,4 +1,4 @@
-name: Publish verified Mars V7 Web
+name: Publish verified Mars mechanical claw Web
 on:
   workflow_dispatch:
 permissions:
@@ -8,11 +8,11 @@ concurrency:
   group: mars-verified-production-release
   cancel-in-progress: false
 env:
-  SOURCE_SHA: be4079164cec80e9affa53a464d92b0be52e77d4
-  VERIFIED_RUN: '38224285901'
-  VERIFIED_HEAD: da6078b16e445b7b426cb6eb27f44b6bfe15585a
-  VERIFIED_ARTIFACT: '11734974963'
-  VERIFIED_DIGEST: 'sha256:1408a2c6cb65c5b794ba2699e8d7ff49a8b7acab3934c4859c1efc805ad99806'
+  SOURCE_SHA: 27ae549b938dde607a8c262dc90004e0d696947f
+  VERIFIED_RUN: '38262817397'
+  VERIFIED_HEAD: 8f45c959ebfccdde86c52821abadaac791eb06e7
+  VERIFIED_ARTIFACT: '11753338679'
+  VERIFIED_DIGEST: 'sha256:293407069dff6f7c03fc8201c87eac05763a3fe822d5014dcb0a304defacca45'
 jobs:
   validate:
     if: github.ref == 'refs/heads/main'

@@ -1,6 +1,6 @@
 {
   "sourceRepository": "BaiMaGod/dengluhuoxing",
-  "sourceCommit": "be4079164cec80e9affa53a464d92b0be52e77d4",
+  "sourceCommit": "27ae549b938dde607a8c262dc90004e0d696947f",
   "engine": "LayaAir 3.4.0 official CLI",
   "browserSmokePassed": true,
   "browserSmokeViewport": [
@@ -9,10 +9,10 @@
   ],
   "files": {
     "index.html": "8b64902310c7e80612933a93c23e088f9738c2f61697d0ffb2e08cd5302d3a6a",
-    "version.json": "fcfd50a90b8ae654df7b5f34c95083e5ac9fb18c04b2c6687353f1c389477912",
+    "version.json": "6ae3cfc57588f1439ca29d8c06b55597d50334237f7869b5ebbe5f343a222a83",
     "fileconfig.json": "b0e0a308138e803b6bab0e469bed21d98d9f6dbcf2f6f5918f2c27e735b84cab",
     "js/index.js": "94155433ed61a14055020f2d6a82f6ff9b2e071049793f0bcb212a164ccec0de",
-    "js/bundle.js": "6656e655cf85fce47e5f570103ba949d537dc84b54cbbed4e4fed80547cdd53b",
+    "js/bundle.js": "7dedabfeedcc41be22d375b10c0583127fdc7d811ed831c882859f5376f33dc6",
     "art/mars_home.png": "3adf427c408ff36671e92a713bfd6a97c43730cff38299c7122a7d5b63f2eb9b",
     "art/mars_flight.png": "1e62ec541427ce73e8c705b60effbd970743edeeee5b4580e710a8106881b5da",
     "libs/laya.physics2D.js": "3f7bb70719ee6ccc2a63e3c3720cde9863ad47e948ea947bfe5fc15d3d4c219d",

@@ -218,7 +218,10 @@
     platformWidth: 520,
     platformHeight: 36,
     platformBottom: 120,
-    spawnGap: 230,
+    craneModuleTop: 430,
+    craneSpeed: 180,
+    craneEdgeMargin: 70,
+    craneRetractMs: 360,
     settleMs: 550,
     nextModuleDelayMs: 220,
     restartDelayMs: 1100,
@@ -3441,9 +3444,12 @@
       );
       this.health.text = `火箭耐久 ${hearts}${empty} ${hp}/${maxHp}`;
     }
+    setModuleFalling() {
+      this.hint.text = "模块下落中 · 落稳后吊装下一块";
+    }
     setBuildingHint() {
       this.hint.visible = true;
-      this.hint.text = "左右拖动模块，松手落下";
+      this.hint.text = "机械臂左右移动 · 点击屏幕释放模块";
     }
     formatAltitude(meters) {
       return meters >= 1e3 ? `${(meters / 1e3).toFixed(2)} km` : `${Math.floor(meters)} m`;
@@ -3497,6 +3503,8 @@
       MissionUi.panel(ribbon.graphics, 205, 54);
       node.addChild(ribbon);
       node.addChild(label);
+      ribbon.visible = false;
+      label.visible = false;
       const plume = this.exhaust.graphics;
       const texture = MissionUi.texture("thrust_v7");
       if (texture) {
@@ -3542,6 +3550,8 @@
       this.body.allowRotation = true;
       this.body.gravityScale = 1;
       this.body.type = "dynamic";
+      this.body.linearVelocity = { x: 0, y: 0 };
+      this.body.angularVelocity = 0;
     }
     updateSettle(deltaMs, linearThreshold, angularThreshold) {
       if (!this.released || this.settled) {
@@ -3974,6 +3984,116 @@
     });
   }
 
+  // assets/scripts/prototype/BuildCrane.ts
+  var BuildCrane = class {
+    constructor(parent) {
+      this.node = new Laya.Sprite();
+      this.rail = new Laya.Sprite();
+      this.carriage = new Laya.Sprite();
+      this.arm = new Laya.Sprite();
+      this.held = null;
+      this.direction = 1;
+      this.releaseMs = 0;
+      this.gripWidth = 220;
+      this.gripTop = GameConfig.craneModuleTop;
+      this.node.name = "build_mechanical_arm";
+      this.node.mouseEnabled = false;
+      this.node.addChild(this.rail);
+      this.node.addChild(this.carriage);
+      this.carriage.addChild(this.arm);
+      parent.addChild(this.node);
+      this.node.visible = false;
+      const g = this.carriage.graphics;
+      for (const x of [-43, 43]) {
+        g.drawCircle(x, 0, 15, "#17364B", "#8FAFB8", 3);
+        g.drawCircle(x, 0, 6, "#C8E3DF");
+      }
+      g.drawRoundRect(-63, 5, 126, 48, 12, 12, 12, 12, "#DDA34D", "#263D4D", 4);
+      g.drawRoundRect(-55, 11, 110, 30, 8, 8, 8, 8, "#F5D48D");
+      g.drawRect(-36, 19, 72, 14, "#294955");
+      for (let x = -27; x < 30; x += 18) g.drawLine(x, 20, x + 8, 32, "#F6D181", 6);
+      g.drawCircle(47, 25, 4, "#8DE9D0");
+    }
+    attach(module, index) {
+      this.held = module;
+      this.direction = index % 2 ? -1 : 1;
+      this.releaseMs = 0;
+      this.gripWidth = module.definition.width;
+      this.gripTop = module.node.y - module.definition.height / 2;
+      this.node.visible = true;
+      this.layout();
+      const half = this.gripWidth / 2 + GameConfig.craneEdgeMargin;
+      module.moveToX(this.direction > 0 ? half : Laya.stage.width - half);
+      this.carriage.x = module.node.x;
+      this.drawArm(0, 0);
+    }
+    release() {
+      this.held = null;
+      this.releaseMs = 0;
+    }
+    hide() {
+      this.held = null;
+      this.node.visible = false;
+    }
+    update(dt) {
+      if (!this.node.visible) return;
+      if (this.held && !this.held.released) {
+        const margin = this.held.definition.width / 2 + GameConfig.craneEdgeMargin;
+        const minX = margin, maxX = Laya.stage.width - margin;
+        let x = this.held.node.x + this.direction * GameConfig.craneSpeed * dt / 1e3;
+        if (x > maxX) {
+          x = maxX - (x - maxX);
+          this.direction = -1;
+        }
+        if (x < minX) {
+          x = minX + (minX - x);
+          this.direction = 1;
+        }
+        this.held.moveToX(Math.max(minX, Math.min(maxX, x)));
+        this.carriage.x = this.held.node.x;
+      } else if (this.releaseMs < GameConfig.craneRetractMs) {
+        this.releaseMs = Math.min(GameConfig.craneRetractMs, this.releaseMs + dt);
+        const t = this.releaseMs / GameConfig.craneRetractMs;
+        this.drawArm(Math.min(1, t * 3), Math.max(0, (t - 0.25) / 0.75) * 58);
+      }
+    }
+    layout() {
+      const w = Laya.stage.width, g = this.rail.graphics;
+      g.clear();
+      g.drawRoundRect(24, 320, w - 48, 37, 10, 10, 10, 10, "#1C3B4B", "#91B1B8", 3);
+      g.drawRect(28, 326, w - 56, 7, "#D3E3DA");
+      g.drawRect(28, 340, w - 56, 6, "#597989");
+      for (let x = 42; x < w - 42; x += 36) g.drawLine(x, 351, x + 14, 351, "#D0A361", 3);
+      this.carriage.y = 338;
+      if (this.held) {
+        const margin = this.gripWidth / 2 + GameConfig.craneEdgeMargin;
+        this.held.moveToX(Math.max(margin, Math.min(w - margin, this.held.node.x)));
+        this.held.node.y = GameConfig.craneModuleTop + this.held.definition.height / 2;
+        this.gripTop = GameConfig.craneModuleTop;
+        this.carriage.x = this.held.node.x;
+        this.drawArm(0, 0);
+      }
+    }
+    drawArm(open, retract) {
+      const g = this.arm.graphics, shoulder = this.gripTop - 338 - retract;
+      const side = this.gripWidth / 2 + 9 + open * 27;
+      g.clear();
+      g.drawRoundRect(-12, 42, 24, Math.max(10, shoulder - 53), 6, 6, 6, 6, "#7D9BA5", "#253F51", 3);
+      g.drawRect(-5, 46, 5, Math.max(6, shoulder - 59), "#D5E8E2");
+      g.drawRoundRect(-38, shoulder - 19, 76, 31, 8, 8, 8, 8, "#E8BB66", "#29424F", 3);
+      for (const sign of [-1, 1]) {
+        g.drawLine(sign * 23, shoulder - 5, sign * side, shoulder + 7, "#253E50", 16);
+        g.drawLine(sign * 23, shoulder - 8, sign * side, shoulder + 4, "#AAC7C6", 9);
+        g.drawLine(sign * side, shoulder + 5, sign * side, shoulder + 42, "#253E50", 15);
+        g.drawLine(sign * side, shoulder + 7, sign * side, shoulder + 39, "#D4A657", 9);
+        g.drawLine(sign * side, shoulder + 42, sign * (side - 13), shoulder + 42, "#263E4D", 12);
+        g.drawCircle(sign * side, shoulder + 6, 8, "#F1D092", "#314D5B", 2);
+      }
+      g.drawCircle(0, shoulder - 4, 10, "#44636D", "#E9CF91", 3);
+      g.drawCircle(0, shoulder - 4, 4, "#ABE8DA");
+    }
+  };
+
   // assets/scripts/prototype/BuildPrototype.ts
   var BuildPrototype = class {
     constructor() {
@@ -3993,7 +4113,6 @@
       this.moduleRolls = {};
       this.current = null;
       this.phase = "home" /* Home */;
-      this.buildDragging = false;
       this.controlDragging = false;
       this.controlPointerStartX = 0;
       this.lastControlInput = 0;
@@ -4002,6 +4121,7 @@
       this.buildGuide = new Laya.Sprite();
       this.guideKey = "";
       this.nextQueued = false;
+      this.nextModuleMs = 0;
       this.platformNode = null;
       this.platformCollider = null;
       this.platformY = 0;
@@ -4061,6 +4181,7 @@
       const debug = new URLSearchParams(((_a = globalThis.location) == null ? void 0 : _a.search) || "").get("debug") === "1";
       this.performance = new PerformanceMonitor(this.root, debug);
       this.world.addChild(this.buildGuide);
+      this.crane = new BuildCrane(this.world);
       this.pauseUI = new PauseOverlay(
         this.root,
         (value) => this.setUserPaused(value),
@@ -4084,7 +4205,6 @@
         if (visible) GameAudio.unlock();
         else GameAudio.suspend();
         this.pointerHeld = false;
-        this.buildDragging = false;
         this.controlDragging = false;
         this.lastControlInput = 0;
         (_a2 = this.flight) == null ? void 0 : _a2.setInput(0);
@@ -4182,7 +4302,6 @@
       this.elapsedAccumulatorMs = 0;
       this.skipResumeDelta = true;
       this.pointerHeld = false;
-      this.buildDragging = false;
       this.controlDragging = false;
       this.lastControlInput = 0;
       (_a = this.flight) == null ? void 0 : _a.setInput(0);
@@ -4228,8 +4347,12 @@
       this.pointerHeld = true;
       this.lastControlInput = 0;
       if (this.phase === "building" /* Building */ && this.current && !this.current.released) {
-        this.buildDragging = true;
-        this.moveCurrentToPointer();
+        this.structureStableMs = 0;
+        syncBodyToNode(this.current.body);
+        this.current.release();
+        this.crane.release();
+        this.hud.setModuleFalling();
+        PlatformManager.current.vibrate("light");
         return;
       }
       if (this.isRocketControlPhase() && this.flight) {
@@ -4246,10 +4369,6 @@
     }
     onPointerMove() {
       if (this.userPaused || this.pointerOnPauseButton()) return;
-      if (this.buildDragging) {
-        this.moveCurrentToPointer();
-        return;
-      }
       if (!this.controlDragging) {
         return;
       }
@@ -4281,34 +4400,12 @@
       if (this.userPaused) return;
       this.pointerHeld = false;
       this.lastControlInput = 0;
-      if (this.buildDragging && this.current && !this.current.released) {
-        this.buildDragging = false;
-        this.moveCurrentToPointer();
-        this.current.release();
-        PlatformManager.current.vibrate("light");
-        return;
-      }
       if (this.controlDragging) {
         this.controlDragging = false;
         this.lastControlInput = 0;
         (_a = this.flight) == null ? void 0 : _a.setInput(0);
         (_b = this.astronaut) == null ? void 0 : _b.setInput(0);
       }
-    }
-    moveCurrentToPointer() {
-      if (!this.current) {
-        return;
-      }
-      const half = this.current.definition.width / 2;
-      const minX = GameConfig.dragMargin + half;
-      const maxX = Laya.stage.width - GameConfig.dragMargin - half;
-      this.current.moveToX(
-        this.clamp(
-          Laya.stage.mouseX,
-          minX,
-          maxX
-        )
-      );
     }
     update() {
       var _a, _b;
@@ -4366,6 +4463,7 @@
       this.updateRunAltitude(dt);
       this.backdrop.update(dt, this.getBackdropScrollSpeed(), this.runAltitudeMeters);
       if (this.phase === "building" /* Building */) {
+        this.crane.update(dt);
         this.updateBuilding(dt);
         return;
       }
@@ -4422,6 +4520,13 @@
     }
     updateBuilding(dt) {
       var _a;
+      if (this.nextQueued) {
+        this.nextModuleMs = Math.max(0, this.nextModuleMs - dt);
+        if (this.nextModuleMs === 0) {
+          this.nextQueued = false;
+          this.spawnNextModule();
+        }
+      }
       if (this.detectCollapse()) {
         this.failBuild();
         return;
@@ -4454,16 +4559,7 @@
       }
       if (!this.nextQueued) {
         this.nextQueued = true;
-        Laya.timer.once(
-          GameConfig.nextModuleDelayMs,
-          this,
-          () => {
-            this.nextQueued = false;
-            if (this.phase === "building" /* Building */) {
-              this.spawnNextModule();
-            }
-          }
-        );
+        this.nextModuleMs = GameConfig.nextModuleDelayMs;
       }
     }
     spawnNextModule() {
@@ -4477,11 +4573,7 @@
         this.progressStore.snapshot
       );
       this.moduleRolls[definition.kind] = roll;
-      const topY = this.getStackTopY();
-      const spawnY = Math.max(
-        330 + definition.height / 2,
-        topY - GameConfig.spawnGap
-      );
+      const spawnY = GameConfig.craneModuleTop + definition.height / 2;
       const module = new RocketModule(
         definition,
         Laya.stage.width / 2,
@@ -4496,12 +4588,14 @@
       this.world.addChild(
         module.node
       );
+      this.world.setChildIndex(this.crane.node, this.world.numChildren - 1);
+      this.crane.attach(module, this.modules.length - 1);
       syncBodyToNode(module.body);
       const luckyText = roll.bonusLevel > 0 ? ` ✦ +${roll.bonusLevel}` : "";
       this.hud.setProgress(
         this.modules.length,
         GameConfig.modules.length,
-        `下一块：${definition.label} Lv.${roll.level}${luckyText} · ${this.modules.length}/${GameConfig.modules.length}`
+        `吊装：${definition.label} Lv.${roll.level}${luckyText} · ${this.modules.length}/${GameConfig.modules.length}`
       );
       this.refreshAccountHud();
     }
@@ -4551,7 +4645,8 @@
       if (this.phase !== "building" /* Building */ && this.phase !== "launch_ready" /* LaunchReady */) return;
       this.destroyActionButton();
       this.phase = "build_failed" /* BuildFailed */;
-      this.buildDragging = false;
+      this.crane.hide();
+      this.buildGuide.visible = false;
       this.hud.setFailure();
       PlatformManager.current.vibrate("heavy");
       Laya.timer.once(
@@ -4565,7 +4660,8 @@
         return;
       }
       this.phase = "launch_ready" /* LaunchReady */;
-      this.buildDragging = false;
+      this.crane.hide();
+      this.buildGuide.visible = false;
       this.current = null;
       this.assembly = new RocketAssembly(
         this.modules
@@ -4962,6 +5058,7 @@
     }
     resetBuild() {
       var _a, _b, _c, _d, _e;
+      Laya.timer.clear(this, this.resetBuild);
       this.feedback.clear();
       this.milestone = 0;
       this.animationMs = 0;
@@ -4993,10 +5090,11 @@
       this.moduleRolls = {};
       this.current = null;
       this.nextQueued = false;
+      this.nextModuleMs = 0;
+      this.crane.hide();
       this.structureStableMs = 0;
       this.hudElapsedMs = 0;
       this.pointerHeld = false;
-      this.buildDragging = false;
       this.controlDragging = false;
       this.damageCooldownMs = 0;
       this.rocketHp = GameConfig.rocketMaxHp;
@@ -5034,6 +5132,7 @@
     showHome(startInUpgrade = false) {
       var _a;
       this.phase = "home" /* Home */;
+      this.crane.hide();
       this.destroyActionButton();
       (_a = this.upgradePanel) == null ? void 0 : _a.hide();
       this.hud.setVisible(false);
@@ -5048,19 +5147,7 @@
       );
     }
     startBuildFromHome() {
-      this.homePanel.hide();
-      this.hud.setVisible(true);
-      this.world.visible = true;
-      this.backdrop.setVisible(false);
-      if (this.buildBackdrop) this.buildBackdrop.visible = true;
-      if (this.platformNode) {
-        this.platformNode.visible = true;
-      }
-      this.phase = "building" /* Building */;
-      this.refreshAccountHud();
-      if (this.modules.length === 0) {
-        this.spawnNextModule();
-      }
+      this.resetBuild();
     }
     onHomeUpgrade(key) {
       if (this.progressStore.tryUpgrade(key)) {
@@ -5084,7 +5171,7 @@
       this.guideKey = key;
       const g = this.buildGuide.graphics;
       g.clear();
-      for (let y = 320; y < top; y += 24) g.drawLine(x, y, x, y + 10, "#A7DBEF", 2);
+      for (let y = GameConfig.craneModuleTop + this.current.definition.height + 12; y < top; y += 24) g.drawLine(x, y, x, y + 10, "#A7DBEF", 2);
       g.drawRect(
         this.current.node.x - this.current.definition.width / 2,
         top - 6,
@@ -5180,9 +5267,11 @@
       }
       if (["building" /* Building */, "build_failed" /* BuildFailed */, "launch_ready" /* LaunchReady */].indexOf(this.phase) >= 0) {
         for (const module of this.modules) {
-          module.node.y += deltaY;
+          if (module.released) module.node.y += deltaY;
           syncBodyToNode(module.body);
         }
+        this.crane.layout();
+        if (this.current && !this.current.released) syncBodyToNode(this.current.body);
       }
       this.hud.layout();
       (_a = this.pauseUI) == null ? void 0 : _a.layout();
