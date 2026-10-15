@@ -1567,6 +1567,8 @@
       this.scenes = [new Laya.Sprite(), new Laya.Sprite()];
       this.clouds = [];
       this.plane = new Laya.Sprite();
+      this.earthLimb = new Laya.Sprite();
+      this.lastEarthAltitude = -Infinity;
       this.stars = [];
       this.reducedMotion = typeof globalThis.matchMedia === "function" && globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches;
       this.altitudes = [0, 1200, 5200, 13e3, 3e4, 65e3, 105e3];
@@ -1582,6 +1584,9 @@
         scene.mouseEnabled = false;
         this.node.addChild(scene);
       }
+      this.earthLimb.name = "earth_horizon";
+      this.earthLimb.mouseEnabled = false;
+      this.node.addChild(this.earthLimb);
       this.createDetails();
       this.reset();
       this.setVisible(false);
@@ -1621,6 +1626,7 @@
     reset() {
       this.rendered = [-1, -1];
       this.elapsed = 0;
+      this.lastEarthAltitude = -Infinity;
       for (const item of [...this.clouds, ...this.stars]) item.node.y = item.initialY;
       this.update(0, 0, 0);
     }
@@ -1664,6 +1670,10 @@
       this.scenes[1].alpha = first === second ? 0 : blend;
       this.scenes[0].y = first === 0 ? Math.min(180, altitude * 0.2) : 0;
       this.scenes[1].y = 0;
+      if (Math.abs(altitude - this.lastEarthAltitude) > 1200 || this.lastEarthAltitude === -Infinity) {
+        this.drawEarthLimb(altitude);
+        this.lastEarthAltitude = altitude;
+      }
       const dt = Math.max(0, Math.min(0.05, deltaMs / 1e3));
       if (this.visible && !this.reducedMotion) this.elapsed += dt;
       const cloudAlpha = Math.min(1, Math.max(0, (altitude - 700) / 1100)) * Math.max(0, Math.min(1, (18500 - altitude) / 4500));
@@ -1685,6 +1695,34 @@
           if (s.node.y > Laya.stage.height) s.node.y = -10;
         }
       }
+    }
+    drawEarthLimb(altitude) {
+      const g = this.earthLimb.graphics;
+      if (altitude < 9e4 || altitude >= 25e5) {
+        this.earthLimb.visible = false;
+        g.clear();
+        return;
+      }
+      this.earthLimb.visible = true;
+      const w = Laya.stage.width, h = Laya.stage.height;
+      const p = Math.max(0, Math.min(1, (altitude - 1e5) / 22e5));
+      const horizon = h * (0.57 + 0.52 * Math.pow(p, 0.65));
+      const bend = 25 + 150 * Math.pow(p, 0.6);
+      const contour = (offset) => {
+        const points = [];
+        for (let i = 0; i <= 24; i++) {
+          const x = w * i / 24, normalized = i / 12 - 1;
+          points.push(x, horizon + offset + bend * normalized * normalized);
+        }
+        points.push(w, h + 120, 0, h + 120);
+        return points;
+      };
+      g.clear();
+      g.drawPoly(0, 0, contour(-28), "#7FCBFF33");
+      g.drawPoly(0, 0, contour(-12), "#3AA8ED88");
+      g.drawPoly(0, 0, contour(0), "#0A3C79");
+      g.drawPoly(0, 0, contour(44), "#12548F");
+      this.earthLimb.alpha = Math.max(0, Math.min(1, (altitude - 9e4) / 21e3)) * Math.max(0, Math.min(1, (25e5 - altitude) / 2e5));
     }
     drawScene(scene, band) {
       const w = Laya.stage.width, h = Laya.stage.height, g = scene.graphics;
@@ -1725,7 +1763,8 @@
       }
       const t = this.phaseElapsedSeconds;
       const engine = Math.max(0.5, Math.min(3, engineMultiplier));
-      const acceleration = phase === "stage1" ? (13 + Math.min(15, t * 0.5)) * engine : phase === "stage2" ? (20 + Math.min(25, t * 1.1)) * engine : phase === "separation" ? -7 : -4;
+      const effectiveEngine = 1 + (engine - 1) * 0.38;
+      const acceleration = phase === "stage1" ? (6 + Math.min(12, t * 0.48)) * effectiveEngine : phase === "stage2" ? (10 + Math.min(20, t * 0.75)) * effectiveEngine : phase === "separation" ? -7 : -4;
       const priorVelocity = this.velocityMetersPerSecond;
       const nextVelocity = Math.max(0, Math.min(4200, priorVelocity + acceleration * dt));
       this.altitudeMeters += (priorVelocity + nextVelocity) * 0.5 * dt;
