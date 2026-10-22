@@ -1,8 +1,5 @@
 {
-  "sourceCommit": "27ae549b938dde607a8c262dc90004e0d696947f",
-  "verifiedRun": 38262817397,
-  "verifiedHead": "8f45c959ebfccdde86c52821abadaac791eb06e7",
-  "artifactId": 11753338679,
-  "artifactDigest": "sha256:293407069dff6f7c03fc8201c87eac05763a3fe822d5014dcb0a304defacca45",
-  "requestedBy": "User confirmed mechanical-arm tap-to-drop assembly and instructed continuation of preview deployment"
+  "sourceCommit": "5424e3b60d1d06d7673534c3276c6ac6bc00900e",
+  "sourceRepository": "BaiMaGod/dengluhuoxing",
+  "requestedBy": "User authorized the 2026-10-22 MVP optimization plan and preview deployment"
 }

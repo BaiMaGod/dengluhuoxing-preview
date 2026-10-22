@@ -1,0 +1,150 @@
+name: Build test and deploy Mars MVP
+on:
+  push:
+    branches: [main]
+    paths: ['release-request.json', '.github/workflows/build-test-deploy.yml', '.github/scripts/**']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: mars-verified-production-release
+  cancel-in-progress: false
+jobs:
+  verify:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    outputs:
+      source_sha: ${{ steps.source.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: preview
+          persist-credentials: false
+      - name: Read immutable source request
+        id: source
+        run: |
+          python3 - <<'PY'
+          import json,re,os
+          request=json.load(open('preview/release-request.json'))
+          sha=request['sourceCommit']
+          assert re.fullmatch('[a-f0-9]{40}',sha)
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f:f.write('sha='+sha+'\n')
+          PY
+      - name: Checkout private source temporarily
+        uses: actions/checkout@v4
+        with:
+          repository: BaiMaGod/dengluhuoxing
+          ref: ${{ steps.source.outputs.sha }}
+          token: ${{ secrets.LAYA_SOURCE_READ_TOKEN || secrets.PREVIEW_SOURCE_READ_TOKEN }}
+          path: source
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/cache@v4
+        with:
+          path: ~/.layaair
+          key: mars-layaair-3.4.0-ubuntu-v1
+      - name: Install official SDK and browser dependencies
+        run: |
+          set -euo pipefail
+          if [ ! -x "$HOME/.layaair/layaair" ]; then curl -fsSL --retry 2 https://raw.githubusercontent.com/layabox/layaair-cli/master/install.sh | bash; fi
+          if [ ! -d "$HOME/.layaair/3.4.0/Resources/engine/types" ]; then "$HOME/.layaair/layaair" install 3.4.0; fi
+          "$HOME/.layaair/layaair" list
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk
+          cd source
+          npm install --ignore-scripts
+          ln -s "$HOME/.layaair/3.4.0/Resources/engine/types" engine
+      - name: SDK typecheck and logic regression
+        working-directory: source
+        run: npm run typecheck && npm test
+      - name: Official LayaAir 3.4.0 build and startup packaging
+        working-directory: source
+        env:
+          SOURCE_SHA: ${{ steps.source.outputs.sha }}
+        run: npm run release:build
+      - name: Serve official Web package
+        run: |
+          python3 -m http.server 4174 --bind 127.0.0.1 --directory "$WEB_ROOT" > /tmp/mars-official-http.log 2>&1 &
+          for n in $(seq 1 20); do if curl -fsS http://127.0.0.1:4174/ > /dev/null; then exit 0; fi; sleep 1; done
+          exit 1
+      - name: Startup fault tests and two-size full gameplay acceptance
+        working-directory: source
+        env:
+          SMOKE_URL: http://127.0.0.1:4174
+        run: |
+          export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
+          npm run release:smoke
+          npm run release:verify
+      - name: Production hostname preflight
+        working-directory: preview
+        env:
+          PREVIEW_URL: http://127.0.0.2:4175/
+        run: |
+          ln -s ../source/node_modules node_modules
+          ln -s "$WEB_ROOT" web
+          python3 -m http.server 4175 --bind 127.0.0.2 --directory "$WEB_ROOT" > /tmp/mars-production-http.log 2>&1 &
+          for n in $(seq 1 20); do if curl --noproxy '*' -fsS http://127.0.0.2:4175/ > /dev/null; then break; fi; sleep 1; done
+          export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
+          node .github/scripts/live-release.mjs
+      - name: Verified Web package
+        uses: actions/upload-artifact@v4
+        with:
+          name: mars-verified-web
+          path: ${{ env.WEB_ROOT }}/
+          if-no-files-found: error
+      - name: QA evidence only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mars-experience-qa
+          path: |
+            source/artifacts/**/*.png
+            source/artifacts/**/*.json
+            preview/live-qa/
+          if-no-files-found: warn
+      - name: Prepare Pages artifact after all gates pass
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ env.WEB_ROOT }}/
+  deploy:
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.pages.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - uses: actions/deploy-pages@v4
+        id: pages
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          name: mars-verified-web
+          path: web
+      - name: Verify actual Pages release and touch gameplay
+        env:
+          PREVIEW_URL: ${{ steps.pages.outputs.page_url }}
+        run: |
+          npm install --no-save --ignore-scripts playwright-core@1.55.0 > /dev/null
+          sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
+          export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
+          node .github/scripts/live-release.mjs
+      - name: Live release evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mars-live-release
+          path: live-qa/

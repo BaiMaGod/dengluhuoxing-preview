@@ -44,9 +44,10 @@ try{for(const view of [{width:390,height:844},{width:375,height:667}]){
   await page.waitForFunction(()=>{function scan(n){if(!n.visible)return false;if(n.text?.startsWith('一级燃料'))return true;for(let i=0;i<n.numChildren;i++)if(scan(n.getChildAt(i)))return true;return false;}return scan(Laya.stage);});
   await page.waitForTimeout(500);await page.screenshot({path:`live-qa/${id}-flight.png`});
   await tap('暂停');await waitLabel('继续远征');await tap('继续远征');
-  await tap('暂停');await waitLabel('继续远征');await tap('返回首页');await waitLabel('开始造火箭');await page.screenshot({path:`live-qa/${id}-home-return.png`});
+  await tap('暂停');await waitLabel('继续远征');await tap('返回首页');await tap('确认返回首页');await waitLabel('开始造火箭');await page.screenshot({path:`live-qa/${id}-home-return.png`});
   assert.deepEqual(errors,[]);report.push({viewport:view,passed:true,layout,errors,sourceCommit:local.sourceCommit});
  }catch(e){report.push({viewport:view,passed:false,error:e.stack,errors});await page.screenshot({path:`live-qa/${id}-failed.png`}).catch(()=>{});throw e;}
  finally{await fs.writeFile('live-qa/report.json',JSON.stringify(report,null,2));await page.close();}
 }}finally{await browser.close();}
-console.log('Live exact-file, touch assembly, flight and settlement checks passed',JSON.stringify(report));
+console.log('Live exact-file, touch assembly, flight and confirmed home-return checks passed',JSON.stringify(report));
+
