@@ -8,7 +8,7 @@ permissions:
   contents: read
 concurrency:
   group: mars-verified-production-release
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   verify:
     if: github.ref == 'refs/heads/main'
