@@ -1,5 +1,5 @@
 {
-  "sourceCommit": "9cfab494ea2532354ad0ad8e89dd77a63e813fc1",
+  "sourceCommit": "0403f36dfbc353a1187cbfe3772ed9e45eb58fdc",
   "sourceRepository": "BaiMaGod/dengluhuoxing",
-  "requestedBy": "Final flight rework: real steering paths plus live layout and moving-hazard assertions"
+  "requestedBy": "Verify flight rework with real-input gantry timing; acceptance thresholds unchanged"
 }
