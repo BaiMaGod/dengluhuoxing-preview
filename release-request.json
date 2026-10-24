@@ -1,5 +1,5 @@
 {
-  "sourceCommit": "843b104f8b23b0c8cd46b2fcc10e8b3f9a5eecec",
+  "sourceCommit": "0758235d5548d3f19cbea27aab7c19118bfe4284",
   "sourceRepository": "BaiMaGod/dengluhuoxing",
-  "requestedBy": "User authorized the 2026-10-24 complete flight rework, tests and preview deployment"
+  "requestedBy": "User authorized flight rework; SDK compatibility corrected"
 }
