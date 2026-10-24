@@ -1,5 +1,5 @@
 {
-  "sourceCommit": "b9b0377ade7a641881e3a82d5dbd2ed808fc8a2d",
+  "sourceCommit": "695952dc6fb715ff9e8d446a596b63dd4e0a4402",
   "sourceRepository": "BaiMaGod/dengluhuoxing",
-  "requestedBy": "Flight rework: restore original four-pixel trigger window, preserve 0.95 build stability gate"
+  "requestedBy": "Visual QA correction: atomic resource formations and real two-sided fork choices"
 }
