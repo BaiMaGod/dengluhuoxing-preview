@@ -1,5 +1,5 @@
 {
-  "sourceCommit": "9835f12092d2664f76d8dee43a702d156e09625b",
+  "sourceCommit": "b9b0377ade7a641881e3a82d5dbd2ed808fc8a2d",
   "sourceRepository": "BaiMaGod/dengluhuoxing",
-  "requestedBy": "Full flight rework with explicit failure-test drop targets restored"
+  "requestedBy": "Flight rework: restore original four-pixel trigger window, preserve 0.95 build stability gate"
 }
