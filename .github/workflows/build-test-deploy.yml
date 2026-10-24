@@ -70,13 +70,44 @@ jobs:
           python3 -m http.server 4174 --bind 127.0.0.1 --directory "$WEB_ROOT" > /tmp/mars-official-http.log 2>&1 &
           for n in $(seq 1 20); do if curl -fsS http://127.0.0.1:4174/ > /dev/null; then exit 0; fi; sleep 1; done
           exit 1
-      - name: Startup fault tests and two-size full gameplay acceptance
+      - name: Startup failure handling
         working-directory: source
         env:
           SMOKE_URL: http://127.0.0.1:4174
         run: |
           export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
-          npm run release:smoke
+          node .github/scripts/startup-test.mjs
+      - name: Visual, touch and frame budgets
+        working-directory: source
+        env:
+          SMOKE_URL: http://127.0.0.1:4174
+        run: |
+          export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
+          node .github/scripts/art-visual.mjs
+      - name: Full gameplay 390x844
+        working-directory: source
+        env:
+          SMOKE_URL: http://127.0.0.1:4174
+          SMOKE_VIEWPORT: 390x844
+        run: |
+          export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
+          node .github/scripts/smoke-test.mjs
+          mkdir -p artifacts/390x844
+          cp artifacts/*.png artifacts/gameplay-report.json artifacts/390x844/
+      - name: Full gameplay 375x667
+        working-directory: source
+        env:
+          SMOKE_URL: http://127.0.0.1:4174
+          SMOKE_VIEWPORT: 375x667
+        run: |
+          export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
+          node .github/scripts/smoke-test.mjs
+          mkdir -p artifacts/375x667
+          cp artifacts/*.png artifacts/gameplay-report.json artifacts/375x667/
+      - name: Accept complete browser evidence and verify hashes
+        working-directory: source
+        run: |
+          node tools/verify-release.mjs --accept
           npm run release:verify
       - name: Production hostname preflight
         working-directory: preview
