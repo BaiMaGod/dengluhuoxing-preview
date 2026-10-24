@@ -126,6 +126,33 @@ jobs:
           name: mars-verified-web
           path: ${{ env.WEB_ROOT }}/
           if-no-files-found: error
+      - name: Compact gameplay visual review
+        if: always()
+        working-directory: source
+        run: |
+          export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
+          node --input-type=module <<'JS'
+          import fs from 'node:fs/promises';
+          import {chromium} from 'playwright-core';
+          const names=(await fs.readdir('artifacts').catch(()=>[])).filter(n=>/^route-.*\.png$/.test(n));
+          const ordered=['route-slalom.png','route-fork.png','route-crossing.png','route-gates.png',...names];
+          const selected=[...new Set(ordered.filter(n=>names.includes(n)))].slice(0,4);
+          if(selected.length){
+            const browser=await chromium.launch({executablePath:process.env.CHROME_BIN,headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
+            const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
+            for(const name of selected){
+              const bytes=await fs.readFile('artifacts/'+name);
+              await page.setContent('<body style="margin:0;background:#081426;display:flex;justify-content:center"><img style="max-width:390px;max-height:844px;object-fit:contain" src="data:image/png;base64,'+bytes.toString('base64')+'"></body>');
+              await page.locator('img').evaluate(img=>img.decode());
+              const jpeg=await page.screenshot({type:'jpeg',quality:62});
+              const encoded=jpeg.toString('base64');
+              console.log('MARS_REVIEW_BEGIN:'+name+':390px-derived-thumbnail');
+              for(let i=0;i<encoded.length;i+=16000)console.log('MARS_REVIEW_DATA:'+encoded.slice(i,i+16000));
+              console.log('MARS_REVIEW_END');
+            }
+            await browser.close();
+          }else console.log('No gameplay route captures yet; original QA artifacts remain authoritative.');
+          JS
       - name: QA evidence only
         if: always()
         uses: actions/upload-artifact@v4
