@@ -1,5 +1,5 @@
 {
-  "sourceCommit": "0403f36dfbc353a1187cbfe3772ed9e45eb58fdc",
+  "sourceCommit": "9835f12092d2664f76d8dee43a702d156e09625b",
   "sourceRepository": "BaiMaGod/dengluhuoxing",
-  "requestedBy": "Verify flight rework with real-input gantry timing; acceptance thresholds unchanged"
+  "requestedBy": "Full flight rework with explicit failure-test drop targets restored"
 }
