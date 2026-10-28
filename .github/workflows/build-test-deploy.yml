@@ -104,6 +104,20 @@ jobs:
           node .github/scripts/smoke-test.mjs
           mkdir -p artifacts/375x667
           cp artifacts/*.png artifacts/gameplay-report.json artifacts/375x667/
+      - name: Low frame cadence and complete S encounter
+        working-directory: source
+        env:
+          SMOKE_URL: http://127.0.0.1:4174
+          SMOKE_VIEWPORT: 390x844
+          SMOKE_FLIGHT_ONLY: '1'
+          SMOKE_FLIGHT_FPS: '15'
+          SMOKE_SEED: '1'
+          SMOKE_REQUIRE_SLALOM: '1'
+        run: |
+          export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
+          node .github/scripts/smoke-test.mjs
+          mkdir -p artifacts/390x844-15fps
+          cp artifacts/*.png artifacts/gameplay-flight-report.json artifacts/390x844-15fps/
       - name: Accept complete browser evidence and verify hashes
         working-directory: source
         run: |
@@ -135,8 +149,8 @@ jobs:
           import fs from 'node:fs/promises';
           import {chromium} from 'playwright-core';
           const names=(await fs.readdir('artifacts').catch(()=>[])).filter(n=>/^route-.*\.png$/.test(n));
-          const ordered=['route-slalom.png','route-fork.png','route-crossing.png','route-gates.png',...names];
-          const selected=[...new Set(ordered.filter(n=>names.includes(n)))].slice(0,4);
+          const ordered=['route-slalom-1.png','route-slalom-2.png','route-slalom-3.png','route-slalom.png','route-fork.png','route-crossing.png','route-gates.png',...names];
+          const selected=[...new Set(ordered.filter(n=>names.includes(n)))].slice(0,6);
           if(selected.length){
             const browser=await chromium.launch({executablePath:process.env.CHROME_BIN,headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
             const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
